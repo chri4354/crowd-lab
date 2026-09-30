@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crowd Lab</title>
+  <meta name="description" content="Interactive explorables on the wisdom — and madness — of crowds.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Explorables">
+      <a class="brand" href="#/">
+        <svg class="brand-mark" viewBox="0 0 64 40" aria-hidden="true">
+          <g fill="currentColor">
+            <circle cx="12" cy="12" r="6"/><path d="M4 36 Q4 21 12 21 Q20 21 20 36Z"/>
+            <circle cx="32" cy="9" r="7"/><path d="M22 36 Q22 18 32 18 Q42 18 42 36Z"/>
+            <circle cx="52" cy="12" r="6"/><path d="M44 36 Q44 21 52 21 Q60 21 60 36Z"/>
+          </g>
+        </svg>
+        <span>Crowd Lab</span>
+      </a>
+      <nav id="tab-nav"></nav>
+      <p class="sidebar-foot">Keys: <kbd>1</kbd>–<kbd>9</kbd> switch tabs · <kbd>R</kbd> new crowd</p>
+    </aside>
+    <main id="stage" tabindex="-1"></main>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
