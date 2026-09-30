@@ -21,7 +21,7 @@ export function mount(el) {
   S = { truth: 50, people: PRESETS["All too high"].map(v => ({ id: nextId++, v })) };
   el.innerHTML = `
     <header class="tab-head">
-      <h1>Page's crowd</h1>
+      <h1>Page's difference</h1>
       <p class="question">Drag the people. When does the crowd's average land closer to the truth than they do?</p>
     </header>
     <div class="layout">

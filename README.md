@@ -3,8 +3,8 @@
 Small interactive explorables on the wisdom — and madness — of crowds, for teaching.
 
 - **Galton's ox** — Galton's 1907 data, then "what if": crowd size, noise, shared bias, and correlation between guesses. Shows the √n fall in error and the floor that bias and copying put under it.
-- **Condorcet's jury** — voter competence × jury size, with the exact probability that the majority is right.
-- **Page's crowd** — drag people along a number line and watch the diversity prediction theorem hold: crowd's error = average error − diversity.
+- **Condorcet's jury** — voter competence × jury size, plus voters who differ in competence and voters who copy an opinion leader, with the exact probability that the majority is right.
+- **Page's difference** — drag people along a number line and watch the diversity prediction theorem hold: crowd's error = average error − diversity.
 
 Everything runs in the browser. No build step, no server.
 

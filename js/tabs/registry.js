@@ -17,7 +17,7 @@ export const TABS = [
   },
   {
     id: "page",
-    title: "Page's crowd",
+    title: "Page's difference",
     subtitle: "Diversity, and bracketing the truth",
     load: () => import("./page.js"),
   },
