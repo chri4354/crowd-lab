@@ -9,6 +9,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <!-- Google Analytics (hellopsi.co.uk property). Consent Mode: nothing is stored until the visitor allows it. -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('consent', 'default', { analytics_storage: 'denied', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+    try { if (localStorage.getItem('crowdlab-analytics') === 'granted') gtag('consent', 'update', { analytics_storage: 'granted' }); } catch (e) {}
+    gtag('js', new Date());
+    gtag('config', 'G-8FJ78GCLJC');
+  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-8FJ78GCLJC"></script>
 </head>
 <body>
   <div class="app">
@@ -24,7 +34,7 @@
         <span>Crowd Lab</span>
       </a>
       <nav id="tab-nav"></nav>
-      <p class="sidebar-foot">Keys: <kbd>1</kbd>–<kbd>9</kbd> switch tabs · <kbd>R</kbd> new crowd</p>
+      <p class="sidebar-foot">Keys: <kbd>1</kbd>–<kbd>9</kbd> switch tabs · <kbd>R</kbd> new crowd<br><a href="#" id="analytics-settings">Analytics settings</a></p>
     </aside>
     <main id="stage" tabindex="-1"></main>
   </div>

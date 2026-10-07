@@ -6,7 +6,9 @@ Small interactive explorables on the wisdom — and madness — of crowds, for t
 - **Condorcet's jury** — voter competence × jury size, plus voters who differ in competence and voters who copy an opinion leader, with the exact probability that the majority is right.
 - **Page's difference** — drag people along a number line and watch the diversity prediction theorem hold: crowd's error = average error − diversity.
 
-Everything runs in the browser. No build step, no server.
+Live at <https://crowdlab.hellopsi.co.uk>. Everything runs in the browser. No build step, no server.
+
+Visits are counted in the hellopsi.co.uk Google Analytics property (G-8FJ78GCLJC), only after the visitor allows analytics cookies. Each tab switch is sent as a `tab_view` event with `tab_id` and `tab_title`.
 
 ## Run locally
 

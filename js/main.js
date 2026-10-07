@@ -1,4 +1,5 @@
 import { TABS } from "./tabs/registry.js";
+import { initConsent, trackTab } from "./lib/analytics.js";
 
 const nav = document.getElementById("tab-nav");
 const stage = document.getElementById("stage");
@@ -30,11 +31,12 @@ async function route() {
   current = null;
   nav.querySelectorAll("a").forEach(a => a.toggleAttribute("aria-current", a.dataset.id === id));
   nav.querySelectorAll("a[aria-current]").forEach(a => a.setAttribute("aria-current", "page"));
-  if (!tab) { home(); document.title = "Crowd Lab"; return; }
+  if (!tab) { home(); document.title = "Crowd Lab"; trackTab("home", "Home"); return; }
   stage.innerHTML = "";
   const module = await tab.load();
   current = { id, module };
   document.title = `${tab.title} · Crowd Lab`;
+  trackTab(tab.id, tab.title);
   module.mount(stage);
   stage.focus({ preventScroll: true });
 }
@@ -46,4 +48,5 @@ window.addEventListener("keydown", e => {
   if (n >= 1 && n <= TABS.length) { location.hash = `#/${TABS[n - 1].id}`; return; }
   current?.module?.onKey?.(e.key.toLowerCase(), e);
 });
+initConsent();
 route();
