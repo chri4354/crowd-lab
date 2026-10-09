@@ -24,6 +24,9 @@ function home() {
     </div>`;
 }
 
+// "https://doi.org/10.x/y" -> "doi:10.x/y"; anything else loses its scheme
+const refLabel = url => url.startsWith("https://doi.org/") ? `doi:${url.slice(16)}` : url.replace(/^https?:\/\//, "");
+
 async function route() {
   const id = location.hash.replace(/^#\/?/, "");
   const tab = TABS.find(t => t.id === id);
@@ -38,6 +41,11 @@ async function route() {
   document.title = `${tab.title} · Crowd Lab`;
   trackTab(tab.id, tab.title);
   module.mount(stage);
+  if (tab.refs?.length) stage.insertAdjacentHTML("beforeend", `
+    <footer class="refs">
+      <h2>Sources</h2>
+      <ol>${tab.refs.map(r => `<li>${r.cite} <a href="${r.url}" target="_blank" rel="noopener">${refLabel(r.url)}</a></li>`).join("")}</ol>
+    </footer>`);
   stage.focus({ preventScroll: true });
 }
 

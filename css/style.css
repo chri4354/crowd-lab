@@ -99,6 +99,11 @@ svg .grid line { stroke: var(--line); stroke-dasharray: 2 4; }
 .home-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; margin-top: 1rem; }
 .home-grid a { color: inherit; text-decoration: none; }
 .home-grid .card:hover { transform: translateY(-2px); }
+.refs { margin-top: 2rem; padding-top: .8rem; border-top: 2px dashed var(--line); font-size: .85rem; color: var(--ink-soft); max-width: 80ch; }
+.refs h2 { font-family: var(--hand); font-weight: 400; font-size: 1.3rem; margin: 0 0 .3rem; color: var(--ink); }
+.refs ol { margin: 0; padding-left: 1.4rem; }
+.refs li { margin-bottom: .35rem; }
+.refs a { color: var(--accent); overflow-wrap: anywhere; }
 .credit { font-size: .8rem; color: var(--ink-soft); margin-top: 1.5rem; }
 
 .sidebar-foot a { color: var(--ink-soft); }
