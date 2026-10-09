@@ -41,7 +41,6 @@ export const TABS = [
     load: () => import("./incentives.js"),
     refs: [
       { cite: "Kao, A. B., Miller, N., Torney, C., Hartnett, A., &amp; Couzin, I. D. (2014). Collective learning and optimal consensus decisions in social animal groups. <i>PLoS Computational Biology</i>, 10(8), e1003762. The model this tab is built on.", url: "https://doi.org/10.1371/journal.pcbi.1003762" },
-      { cite: "Kao, A. B., &amp; Couzin, I. D. (2014). Decision accuracy in complex environments is often maximized by small group sizes. <i>Proceedings of the Royal Society B</i>, 281, 20133305.", url: "https://doi.org/10.1098/rspb.2013.3305" },
       { cite: "Pescetelli, N., Rutherford, A., Rahwan, I., &amp; Kao, A. B. (2025). Collective incentives improve group accuracy by reducing reliance on shared news sources. <i>Collective Intelligence</i>, 4(3).", url: "https://doi.org/10.1177/26339137251372605" },
     ],
   },

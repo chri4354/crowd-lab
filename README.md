@@ -34,7 +34,6 @@ Shared helpers (sliders, buttons, the little person figure, statistics) are in `
 - Page, S. E. (2007). Making the difference: Applying a logic of diversity. *Academy of Management Perspectives*, 21(4), 6–20.
 - Kao, A. B., Miller, N., Torney, C., Hartnett, A., & Couzin, I. D. (2014). Collective learning and optimal consensus decisions in social animal groups. *PLoS Computational Biology*, 10(8), e1003762. doi:10.1371/journal.pcbi.1003762 — the model behind the incentives tab (two cues, majority rule, Rescorla–Wagner learning).
 - Pescetelli, N., Rutherford, A., Rahwan, I., & Kao, A. B. (2025). Collective incentives improve group accuracy by reducing reliance on shared news sources. *Collective Intelligence*, 4(3). doi:10.1177/26339137251372605
-- Kao, A. B., & Couzin, I. D. (2014). Decision accuracy in complex environments is often maximized by small group sizes. *Proceedings of the Royal Society B*, 281, 20133305. doi:10.1098/rspb.2013.3305
 - Condorcet, M. de (1785). *Essai sur l'application de l'analyse à la probabilité des décisions rendues à la pluralité des voix*. <https://archive.org/details/essaisurlapplica00cond>
 - Grofman, B., Owen, G., & Feld, S. L. (1983). Thirteen theorems in search of the truth. *Theory and Decision*, 15(3), 261–278. doi:10.1007/BF00125672
 - Ladha, K. K. (1992). The Condorcet jury theorem, free speech, and correlated votes. *American Journal of Political Science*, 36(3), 617–634. doi:10.2307/2111584
