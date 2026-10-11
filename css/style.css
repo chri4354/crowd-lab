@@ -38,7 +38,7 @@ body { background-image: radial-gradient(var(--line) 0.6px, transparent 0.6px); 
 .sidebar { position: sticky; top: 0; height: 100vh; padding: 1.4rem 1rem; background: var(--paper-2); border-right: 2px dashed var(--line); display: flex; flex-direction: column; gap: 1rem; }
 .brand { display: flex; align-items: center; gap: .6rem; color: var(--ink); text-decoration: none; font-family: var(--hand); font-size: 1.9rem; line-height: 1; }
 .brand-mark { width: 2.6rem; color: var(--person); }
-#tab-nav { display: flex; flex-direction: column; gap: .35rem; }
+#tab-nav { display: flex; flex-direction: column; gap: .35rem; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 2px .4rem 8px 2px; margin: -2px -.4rem -8px -2px; }
 #tab-nav a { display: grid; grid-template-columns: 1.8rem 1fr; align-items: baseline; gap: .3rem; padding: .55rem .7rem; border-radius: 12px; color: var(--ink); text-decoration: none; border: 2px solid transparent; }
 #tab-nav a .num { font-family: var(--hand); font-size: 1.3rem; color: var(--ink-soft); }
 #tab-nav a .t { font-weight: 800; }
