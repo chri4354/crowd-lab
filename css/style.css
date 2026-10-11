@@ -51,6 +51,7 @@ kbd { font-family: var(--body); font-size: .75em; border: 1px solid var(--line);
 
 main { padding: 1.6rem clamp(1rem, 3vw, 3rem) 3rem; max-width: 110rem; outline: none; }
 .tab-head h1 { font-family: var(--hand); font-weight: 400; font-size: clamp(2rem, 3vw, 3rem); margin: 0; line-height: 1.05; }
+.tab-head a, .note a { color: var(--accent); }
 .tab-head .question { font-size: 1.15rem; color: var(--ink-soft); margin: .3rem 0 1.2rem; max-width: 60ch; }
 
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; gap: 1.2rem; align-items: start; }
@@ -61,6 +62,7 @@ main { padding: 1.6rem clamp(1rem, 3vw, 3rem) 3rem; max-width: 110rem; outline: 
 .controls { display: flex; flex-direction: column; gap: 1rem; }
 .control label { display: flex; justify-content: space-between; font-weight: 800; font-size: .95rem; }
 .control label output { font-family: var(--hand); font-size: 1.3rem; font-weight: 400; color: var(--accent); }
+.control select { width: 100%; font: inherit; font-size: .9rem; color: var(--ink); background: var(--card); border: 2px solid var(--ink); border-radius: 10px; padding: .35rem .5rem; margin-top: .25rem; }
 .control .hint { font-size: .8rem; color: var(--ink-soft); margin: .1rem 0 0; }
 input[type=range] { width: 100%; accent-color: var(--accent); height: 1.6rem; }
 .btn-row { display: flex; flex-wrap: wrap; gap: .5rem; }
@@ -81,6 +83,8 @@ button.primary { background: var(--crowd); color: #2b2a33; }
 .note { font-size: .92rem; color: var(--ink-soft); margin: .8rem 0 0; max-width: 70ch; }
 .note b { color: var(--ink); }
 .chart-card { margin-top: 1rem; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; font-size: .85rem; color: var(--ink-soft); margin: 0 0 .3rem; }
+.chart-legend .swatch { display: inline-block; width: 1.4rem; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: .4rem; }
 
 /* svg text & marks */
 svg text { font-family: var(--body); fill: var(--ink); }

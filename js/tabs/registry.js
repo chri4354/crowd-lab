@@ -44,4 +44,32 @@ export const TABS = [
       { cite: "Pescetelli, N., Rutherford, A., Rahwan, I., &amp; Kao, A. B. (2025). Collective incentives improve group accuracy by reducing reliance on shared news sources. <i>Collective Intelligence</i>, 4(3).", url: "https://doi.org/10.1177/26339137251372605" },
     ],
   },
+  {
+    id: "estimates",
+    title: "Incentives, with estimates",
+    subtitle: "The same, with numbers not choices",
+    load: () => import("./estimates.js"),
+    refs: [
+      { cite: "Pescetelli, N., Rutherford, A., Rahwan, I., &amp; Kao, A. B. (2025). Collective incentives improve group accuracy by reducing reliance on shared news sources. <i>Collective Intelligence</i>, 4(3). The question this tab asks; the continuous model itself is a toy, not from the paper.", url: "https://doi.org/10.1177/26339137251372605" },
+    ],
+  },
+  {
+    id: "lorenz",
+    title: "Lorenz's influence",
+    subtitle: "Seeing the others' guesses",
+    load: () => import("./lorenz.js"),
+    refs: [
+      { cite: "Lorenz, J., Rauhut, H., Schweitzer, F., &amp; Helbing, D. (2011). How social influence can undermine the wisdom of crowd effect. <i>Proceedings of the National Academy of Sciences</i>, 108(22), 9020–9025. The data are the paper's Dataset S1.", url: "https://doi.org/10.1073/pnas.1008636108" },
+    ],
+  },
+  {
+    id: "becker",
+    title: "Becker's networks",
+    subtitle: "Who listens to whom",
+    load: () => import("./becker.js"),
+    refs: [
+      { cite: "Becker, J., Brackbill, D., &amp; Centola, D. (2017). Network dynamics of social influence in the wisdom of crowds. <i>Proceedings of the National Academy of Sciences</i>, 114(26), E5070–E5076. The data are the paper's Dataset S1; the network ties are recovered from it.", url: "https://doi.org/10.1073/pnas.1615978114" },
+      { cite: "Golub, B., &amp; Jackson, M. O. (2010). Naïve learning in social networks and the wisdom of crowds. <i>American Economic Journal: Microeconomics</i>, 2(1), 112–149. Why the average ends up weighted by who is listened to.", url: "https://doi.org/10.1257/mic.2.1.112" },
+    ],
+  },
 ];

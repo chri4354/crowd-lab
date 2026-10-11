@@ -79,6 +79,21 @@ export function drawPerson(g, s) {
   return g;
 }
 
+// vertical offsets so that dots at nearly the same x do not hide each other
+export function swarm(xs, rad) {
+  const order = xs.map((x, i) => [x, i]).filter(d => d[0] != null).sort((a, b) => a[0] - b[0]);
+  const dy = new Array(xs.length).fill(0), placed = [];
+  const steps = [0, -1, 1, -2, 2, -3, 3];
+  for (const [x, i] of order) {
+    for (const s of steps) {
+      const y = s * rad * 1.9;
+      if (!placed.some(p => Math.abs(p.x - x) < rad * 1.9 && Math.abs(p.y - y) < rad * 1.9)) { dy[i] = y; placed.push({ x, y }); break; }
+      if (s === 3) { dy[i] = 0; placed.push({ x, y: 0 }); }
+    }
+  }
+  return dy;
+}
+
 // Stack values into a dot plot: returns [{v, x, level}] with columns of width `bin` px.
 export function stackDots(values, x, bin) {
   const cols = new Map();
