@@ -314,8 +314,8 @@ let rounds = 0;
 
 export const story = [
   { setup: startOver,
-    text: `<p>Everyone reads the same headline. It points to the right answer 75% of the time.</p>
-           <p>Each person also has a <b>private tip</b> of their own: less reliable, right 60% of the time, but independent of everyone else's.</p>
+    text: `<p><b>2018.</b> In an online experiment, Albert Kao, Niccolò Pescetelli and colleagues asked 232 people to make forecasts after reading short news posts. Some posts were seen by everyone in the group, others by one person only. The results were published in 2025.</p>
+           <p>Here is a simple version. Everyone reads the same headline, which points to the right answer 75% of the time. Each person also has a <b>private tip</b>: less reliable, right 60% of the time, but independent of everyone else's.</p>
            <p>When the two disagree, which should you trust? It depends on how people are paid.</p>` },
   { target: ".stage-card", reveal: [".stage-card"], setup: startOver,
     text: `<p>Here are 25 people facing a yes-or-no question. The top line says whether today's headline points the right way.</p>
