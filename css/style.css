@@ -116,6 +116,31 @@ svg .grid line { stroke: var(--line); stroke-dasharray: 2 4; }
 .consent { position: fixed; right: 1rem; bottom: 1rem; max-width: 22rem; z-index: 10; font-size: .9rem; }
 .consent p { margin: 0 0 .7rem; }
 
+/* guided stories (js/lib/story.js) */
+:root { --story-dim: rgba(44, 21, 77, .42); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --story-dim: rgba(8, 3, 16, .62); } }
+:root[data-theme="dark"] { --story-dim: rgba(8, 3, 16, .62); }
+.mode, .stage-card, .readouts, .chart-card, .controls { transition: opacity .45s ease; }
+.story-hidden { opacity: 0; visibility: hidden; }
+.story-dim { position: fixed; z-index: 40; pointer-events: none; border-radius: 16px; box-shadow: 0 0 0 200vmax var(--story-dim);
+  transition: left .25s ease, top .25s ease, width .25s ease, height .25s ease; }
+.story-dim.full { box-shadow: none; background: var(--story-dim); border-radius: 0; }
+.story-card { position: fixed; z-index: 50; width: min(23rem, calc(100vw - 16px)); background: var(--card); color: var(--ink);
+  border: 2px solid var(--ink); border-radius: 16px; box-shadow: var(--shadow); padding: .8rem 1rem .9rem; transition: left .25s ease, top .25s ease; }
+.story-card.sheet { left: 8px; right: 8px; bottom: 8px; top: auto; width: auto; }
+.story-top { display: flex; justify-content: space-between; align-items: center; }
+.story-count { font-family: var(--hand); font-size: 1.1rem; color: var(--accent); }
+.story-x { border: 0; box-shadow: none; background: none; font-size: 1.4rem; line-height: 1; padding: 0 .2rem; color: var(--ink-soft); }
+.story-text { font-size: 1rem; line-height: 1.45; margin: .2rem 0 .4rem; }
+.story-text p { margin: 0 0 .5rem; }
+.story-text b { color: var(--accent); }
+.story-try { font-family: var(--hand); font-size: 1.2rem; color: var(--wrong); margin: .2rem 0 .5rem; }
+.story-nav { display: flex; justify-content: space-between; gap: .5rem; }
+.story-nav button[disabled] { opacity: .45; cursor: not-allowed; transform: none; }
+.story-btn { font-size: .85rem; padding: .3rem .8rem; margin-top: .2rem; }
+.guided-toggle { display: flex; align-items: center; gap: .4rem; margin-bottom: .5rem; font-weight: 700; color: var(--ink); cursor: pointer; }
+.guided-toggle input { accent-color: var(--accent); width: 1rem; height: 1rem; }
+
 @media (max-width: 1000px) {
   .layout { grid-template-columns: 1fr; }
 }

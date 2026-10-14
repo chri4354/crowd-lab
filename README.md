@@ -33,6 +33,8 @@ then open <http://localhost:8000>. (Opening `index.html` directly from disk will
 1. Create `js/tabs/<id>.js` exporting `mount(el)`. Optionally export `unmount()` and `onKey(key)` (`R` is "new crowd" by convention).
 2. Add one entry to `js/tabs/registry.js`, with its `refs`: they are listed as numbered sources at the foot of the tab.
 
+3. Optionally export `story`, a guided walk-through: an array of steps, each pointing at part of the page, revealing panels as it goes, and optionally waiting for the reader to try something before moving on. The format is documented at the top of `js/lib/story.js`; `js/tabs/galton.js` has a full example. Stories start automatically unless the reader turns off "Guided stories" in the sidebar (or opens the page with `?guide=0`), and every tab with a story has a "Walk me through it" button.
+
 Shared helpers (sliders, buttons, the little person figure, statistics) are in `js/lib/util.js`. Colours and type are CSS variables in `css/style.css`.
 
 ## Sources

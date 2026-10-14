@@ -28,10 +28,12 @@ export function median(xs) {
 }
 
 // ---------- controls ----------
-// slider({ label, min, max, step, value, format, hint, onInput }) -> element with .set(v)
-export function slider({ label, min, max, step = 1, value, format = v => v, hint = "", onInput }) {
+// slider({ label, min, max, step, value, format, hint, onInput, tour }) -> element with .set(v)
+// `tour` names the control for guided stories (data-tour="…").
+export function slider({ label, min, max, step = 1, value, format = v => v, hint = "", onInput, tour }) {
   const el = document.createElement("div");
   el.className = "control";
+  if (tour) el.dataset.tour = tour;
   const id = "s" + Math.random().toString(36).slice(2, 8);
   el.innerHTML = `
     <label for="${id}"><span>${label}</span><output for="${id}"></output></label>

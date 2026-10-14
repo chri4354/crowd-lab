@@ -49,18 +49,19 @@ function buildControls() {
   S.nIdx = Math.min(S.nIdx, steps.length - 1);
   c.appendChild(slider({
     label: "People in the crowd", min: 0, max: steps.length - 1, value: S.nIdx,
-    format: i => fmt(steps[i]), onInput: i => { S.nIdx = i; newCrowd(); },
+    format: i => fmt(steps[i]), onInput: i => { S.nIdx = i; newCrowd(); }, tour: "n",
   }));
   if (S.mode === "whatif") {
     c.appendChild(slider({ label: "How noisy each guess is", min: 5, max: 100, step: 5, value: S.sigma,
-      format: v => `± ${v} lb`, hint: "Each person's random error.", onInput: v => { S.sigma = v; newCrowd(); } }));
+      format: v => `± ${v} lb`, hint: "Each person's random error.", onInput: v => { S.sigma = v; newCrowd(); }, tour: "sigma" }));
     c.appendChild(slider({ label: "Shared bias", min: -100, max: 100, step: 5, value: S.bias,
-      format: v => `${v > 0 ? "+" : ""}${v} lb`, hint: "An error everyone makes in the same direction.", onInput: v => { S.bias = v; newCrowd(); } }));
+      format: v => `${v > 0 ? "+" : ""}${v} lb`, hint: "An error everyone makes in the same direction.", onInput: v => { S.bias = v; newCrowd(); }, tour: "bias" }));
     c.appendChild(slider({ label: "How much people copy each other", min: 0, max: 0.9, step: 0.05, value: S.rho,
-      format: v => fmt(v, 2), hint: "Correlation between guesses. 0 = fully independent.", onInput: v => { S.rho = v; newCrowd(); } }));
+      format: v => fmt(v, 2), hint: "Correlation between guesses. 0 = fully independent.", onInput: v => { S.rho = v; newCrowd(); }, tour: "rho" }));
   }
   const row = document.createElement("div"); row.className = "btn-row";
   row.appendChild(button("Ask a new crowd", newCrowd, "primary"));
+  row.lastChild.dataset.tour = "new";
   if (S.mode === "whatif") row.appendChild(button("Reset", () => { Object.assign(S, { sigma: 60, bias: 0, rho: 0, nIdx: 5 }); buildControls(); newCrowd(); }));
   c.appendChild(row);
   const note = document.createElement("p"); note.className = "note";
@@ -210,3 +211,72 @@ function drawChart() {
     .attr("text-anchor", n > 300 ? "end" : "start").attr("font-size", 22)
     .text(`${fmt(n)} ${n === 1 ? "person" : "people"}: typically off by ${fmt(e)} lb`);
 }
+
+// ---------- guided story ----------
+// Helpers that put the tab into a given state, so each step starts where it should.
+function setMode(m) {
+  S.mode = m;
+  root.querySelectorAll(".mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === m)));
+  buildControls();
+  newCrowd();
+}
+function setCrowd(n, patch = {}) {
+  Object.assign(S, patch);
+  const steps = S.mode === "fair" ? N_STEPS_FAIR : N_STEPS_WHATIF;
+  S.nIdx = Math.max(0, steps.indexOf(n));
+  buildControls();
+  newCrowd();
+}
+const errs = () => {
+  const m = mean(S.crowd);
+  return { avg: fmt(Math.abs(m - T)), typical: fmt(mean(S.crowd.map(g => Math.abs(g - T)))) };
+};
+let clicks = 0;
+// the first part of the story is about Galton's own fair; Back from "What if…" returns there
+const fair = (then = () => {}) => () => { if (S.mode !== "fair") setMode("fair"); then(); };
+
+export const story = [
+  { text: `<p><b>Plymouth, 1906.</b> At a country fair, 787 people paid sixpence each to guess the weight of an ox, once it was slaughtered and dressed.</p>
+           <p>The scientist Francis Galton collected their tickets. Let's look at them, starting with one.</p>`,
+    setup: fair(() => setCrowd(1)) },
+  { target: ".stage-card", reveal: [".stage-card"], setup: fair(() => setCrowd(1)),
+    text: () => `<p>Here is one person's guess: ${fmt(S.crowd[0])} lb. The <span style="color:var(--truth)">green line</span> is the ox's real weight, ${fmt(T)} lb.</p>
+                 <p>This person was off by ${errs().avg} lb. Would you trust them?</p>` },
+  { target: '[data-tour="n"]', reveal: [".controls"], place: "below", setup: fair(),
+    text: `<p>One guess tells you little. <b>Ask more people</b>: drag <i>People in the crowd</i> up.</p>`,
+    waitFor: { event: "input", target: '[data-tour="n"] input', until: () => nNow() >= 20, prompt: "Drag it to 20 people or more." } },
+  { target: ".stage-card", setup: fair(),
+    text: `<p>Each figure is one guess. Some are far too low, some far too high.</p>
+           <p>The <span style="color:var(--crowd)">yellow line</span> is their average. Notice where it lands.</p>` },
+  { target: ".readouts", reveal: [".readouts"], setup: fair(),
+    text: () => `<p>A typical person is off by about ${errs().typical} lb. The crowd's average is off by ${errs().avg} lb.</p>
+                 <p>People err in different directions, so in the average their errors <b>cancel out</b>.</p>` },
+  { target: '[data-tour="new"]', setup: fair(() => { clicks = 0; }),
+    text: `<p>Was that luck? <b>Ask a new crowd</b>: the same number of people, picked at random from Galton's 787 tickets.</p>`,
+    waitFor: { event: "click", target: '[data-tour="new"]', until: () => ++clicks >= 3, prompt: "Press it three times. Does the average stay close?" } },
+  { target: ".stage-card", setup: fair(() => setCrowd(787)),
+    text: () => `<p>Here are all 787 guesses. Galton reported the middle one, the median (the dashed line): ${fmt(median(S.crowd))} lb, less than 1% from the truth.</p>
+                 <p>He called it <i>vox populi</i>, the voice of the people.</p>` },
+  { target: ".chart-card", reveal: [".chart-card"], setup: fair(),
+    text: `<p>How many people do you need? The chart shows how far off the average typically is, for crowds of each size. The circle is your crowd.</p>`,
+    waitFor: { event: "input", target: '[data-tour="n"] input', prompt: "Move the slider and watch the circle travel." } },
+  { target: ".chart-card", setup: fair(),
+    text: `<p>The error falls fast at first, then slowly. Ten times more people shrink it only about three times (the square root of ten).</p>
+           <p>Most of the wisdom comes from the first few dozen people.</p>` },
+  { target: ".mode", reveal: [".mode"], place: "below", setup: fair(),
+    text: `<p>So far the errors cancelled because they were independent and pointed both ways. What if they don't?</p>`,
+    waitFor: { event: "click", target: '.mode button[data-value="whatif"]', prompt: "Click “What if…” to run your own fair." } },
+  { target: '[data-tour="bias"]', place: "below", setup: () => { if (S.mode !== "whatif") setMode("whatif"); },
+    text: `<p>Suppose everyone thinks oxen look heavier than they are. Give the crowd a <b>shared bias</b>.</p>`,
+    waitFor: { event: "input", target: '[data-tour="bias"] input', until: () => Math.abs(S.bias) >= 30, prompt: "Move Shared bias to ±30 lb or more." } },
+  { target: ".chart-card",
+    text: `<p>A red floor appears on the chart. Each person's own error still cancels out, but the error they share does not.</p>
+           <p>No crowd, however large, averages it away.</p>` },
+  { target: '[data-tour="rho"]', place: "below", setup: () => setCrowd(100, { bias: 0, rho: 0 }),
+    text: `<p>I've set the bias back to zero. Now let people <b>copy each other</b>.</p>
+           <p>Watch the last number: how many independent people the crowd is really worth.</p>`,
+    waitFor: { event: "input", target: '[data-tour="rho"] input', until: () => S.rho >= 0.3, prompt: "Move the copying slider to 0.30 or more." } },
+  { text: `<p>That's Galton's ox. A crowd is wise when its errors are <b>independent</b> and point in <b>different directions</b>. A shared bias, or people copying each other, puts a floor under the error that no crowd can average away.</p>
+           <p>Next: what if people vote instead of guessing a number? Try <a href="#/condorcet">Condorcet's jury</a>.</p>` },
+];
+
