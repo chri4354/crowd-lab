@@ -34,7 +34,7 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); line-height: 1.5; }
-body { background-image: radial-gradient(var(--line) 0.6px, transparent 0.6px); background-size: 22px 22px; }
+body { background-image: radial-gradient(var(--line) 1.2px, transparent 1.2px); background-size: 30px 30px; }
 
 .app { display: grid; grid-template-columns: 15rem 1fr; min-height: 100vh; }
 .sidebar { position: sticky; top: 0; height: 100vh; padding: 1.4rem 1rem; background: var(--paper-2); border-right: 2px dashed var(--line); display: flex; flex-direction: column; gap: 1rem; }
