@@ -316,7 +316,7 @@ export const story = [
   { setup: startOver,
     text: `<p>Everyone reads the same headline. It points to the right answer 75% of the time.</p>
            <p>Each person also has a <b>private tip</b> of their own: less reliable, right 60% of the time, but independent of everyone else's.</p>
-           <p>When the two disagree, which should you trust? It depends on who is paying.</p>` },
+           <p>When the two disagree, which should you trust? It depends on how people are paid.</p>` },
   { target: ".stage-card", reveal: [".stage-card"], setup: startOver,
     text: `<p>Here are 25 people facing a yes-or-no question. The top line says whether today's headline points the right way.</p>
            <p>Each person votes with the headline or with their tip (● means they went with their tip against the headline). The group decides by majority.</p>` },
@@ -346,7 +346,7 @@ export const story = [
   { target: ".trace-card", setup: () => { if (!raf) start(); },
     text: `<p>Trust in the tip sinks to about 20%. People learn to lean on the headline, the best strategy for each of them, and the group ends up no better than the headline.</p>` },
   { target: ".mode", reveal: [".mode", '[data-tour="m"]', '[data-tour="rH"]', '[data-tour="rL"]'], place: "below",
-    text: `<p>Same people, same learning rule. Now change <b>who gets paid</b>.</p>`,
+    text: `<p>Same people, same learning rule. Now change <b>how people are paid</b>.</p>`,
     waitFor: { event: "click", target: '.mode button[data-value="us"]', prompt: "Click “Pay everyone for the group's answer”." } },
   { target: [".trace-card", ".readouts"], setup: () => { if (!raf) start(); },
     text: `<p>Trust in the tip climbs towards the green line. Paid for the group's answer, people learn to keep their own information, and the group is right about 86% of the time.</p>
