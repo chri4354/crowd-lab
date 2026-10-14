@@ -11,9 +11,9 @@ const W = 900, H = 450, M = { l: 112, r: 24, t: 44, b: 40 };
 const CW = 900, CH = 230, CM = { l: 56, r: 16, t: 34, b: 40 };
 const ROUNDS = 5, DOM = [-2, 2];                 // log10(estimate / truth)
 const COND = [
-  { value: "none", label: "See nothing", color: "var(--ink-soft)" },
-  { value: "mean", label: "See the average", color: "var(--person)" },
-  { value: "all", label: "See every guess", color: "var(--accent)" },
+  { value: "none", label: "See nothing", color: "var(--series-0)", dash: true },
+  { value: "mean", label: "See the average", color: "var(--series-1)" },
+  { value: "all", label: "See every guess", color: "var(--series-2)" },
 ];
 const SIMS = 300;
 
@@ -301,12 +301,12 @@ function drawChart() {
     g.append("text").attr("x", pw - CM.r).attr("y", CH - 4).attr("text-anchor", "end").attr("font-size", 14).style("fill", "var(--ink-soft)").text("guess");
     for (const c of conds) {
       const pts = sum[c.value][p.key].map((v, r) => [x(r + 1), y(v)]);
-      g.append("path").datum(pts).attr("fill", "none").attr("stroke", c.color).attr("stroke-width", 3.5).attr("d", d3.line());
+      g.append("path").datum(pts).attr("fill", "none").attr("stroke", c.color).attr("stroke-width", 3.5).attr("stroke-dasharray", c.dash ? "7 5" : null).attr("d", d3.line());
       g.selectAll(null).data(pts).join("circle").attr("cx", d => d[0]).attr("cy", d => d[1]).attr("r", 4).attr("fill", c.color);
     }
   });
   root.querySelector(".chart-legend").innerHTML = conds.map(c =>
-    `<span class="key"><span class="swatch" style="background:${c.color}"></span>${c.label}</span>`).join("");
+    `<span class="key"><span class="swatch${c.dash ? " dashed" : ""}" style="background:${c.color}"></span>${c.label}</span>`).join("");
 }
 
 // ---------- guided story ----------
@@ -357,7 +357,7 @@ export const story = [
     text: () => `<p>A group on the same question that saw nothing. People still change their minds a little, but they do not close in on each other: guesses differ by ${times(spreadLog(rows()[0]))} at first and ${times(spreadLog(rows()[4]))} at the end.</p>
                  <p>The truth stays central (${centrality(rows()[0])} of 6, then ${centrality(rows()[4])}), and confidence does not rise (${conf(0)} to ${conf(1)}).</p>` },
   { target: ".chart-card", reveal: [".chart-card", '[data-tour="question"]', '[data-tour="group"]', '[data-tour="all"]', '[data-tour="again"]'],
-    text: `<p>Now all 72 groups. Seeing others, the average (blue) or every guess (purple), shrinks the spread and pushes the truth towards the edge of the guesses. Seeing nothing (grey) changes little.</p>
+    text: `<p>Now all 72 groups. Seeing others, the average (blue) or every guess (orange), shrinks the spread and pushes the truth towards the edge of the guesses. Seeing nothing (dashed grey) changes little.</p>
            <p>Lorenz et al. called this the <b>social influence effect</b>.</p>` },
   { target: ".chart-card",
     text: `<p>Now the middle panel. Seeing the average also made the crowd's answer better: in 20 of 24 groups. Seeing every guess did not help.</p>
