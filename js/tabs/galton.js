@@ -257,7 +257,7 @@ export const story = [
   { target: ".stage-card", setup: fair(() => setCrowd(787)),
     text: () => `<p>Here are all 787 guesses. Galton reported the middle one, the median (the dashed line): ${fmt(median(S.crowd))} lb, less than 1% from the truth.</p>
                  <p>He called it <i>vox populi</i>, the voice of the people.</p>` },
-  { target: ".chart-card", reveal: [".chart-card"], setup: fair(),
+  { target: [".chart-card", '[data-tour="n"]'], reveal: [".chart-card"], setup: fair(),
     text: `<p>How many people do you need? The chart shows how far off the average typically is, for crowds of each size. The circle is your crowd.</p>`,
     waitFor: { event: "input", target: '[data-tour="n"] input', prompt: "Move the slider and watch the circle travel." } },
   { target: ".chart-card", setup: fair(),

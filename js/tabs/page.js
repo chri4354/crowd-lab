@@ -38,12 +38,13 @@ export function mount(el) {
     </div>`;
   const c = el.querySelector(".controls");
   c.innerHTML = `<h2>Arrange the crowd</h2><p class="note" style="margin:0">Drag people along the line. Drag the green flag to move the truth. With the keyboard: Tab to a person, then ← →.</p>`;
-  const presets = document.createElement("div"); presets.className = "btn-row";
-  Object.keys(PRESETS).forEach(name => presets.appendChild(button(name, () => {
-    S.people = PRESETS[name].map(v => ({ id: nextId++, v })); S.truth = 50; draw();
-  })));
+  const presets = document.createElement("div"); presets.className = "btn-row"; presets.dataset.tour = "presets";
+  Object.keys(PRESETS).forEach(name => {
+    presets.appendChild(button(name, () => setPreset(name)));
+    presets.lastChild.dataset.tour = `preset-${name.split(" ").pop().toLowerCase()}`;   // preset-high, -bracketing, -clones, -wild
+  });
   c.appendChild(presets);
-  const addrm = document.createElement("div"); addrm.className = "btn-row";
+  const addrm = document.createElement("div"); addrm.className = "btn-row"; addrm.dataset.tour = "addrm";
   addrm.appendChild(button("+ person", () => { if (S.people.length < 20) { S.people.push({ id: nextId++, v: Math.round(5 + Math.random() * 90) }); draw(); } }));
   addrm.appendChild(button("− person", () => { if (S.people.length > 2) { S.people.pop(); draw(); } }));
   c.appendChild(addrm);
@@ -56,6 +57,14 @@ export function onKey(k) {
   if (k === "r") { S.people = S.people.map(p => ({ ...p, v: Math.round(5 + Math.random() * 90) })); draw(); }
 }
 export function unmount() { root = null; }
+
+function setPreset(name) {
+  S.people = PRESETS[name].map(v => ({ id: nextId++, v }));
+  S.truth = 50;
+  draw();
+}
+// tell anyone listening (the guided story) that a person or the truth was moved
+const moved = node => node.dispatchEvent(new CustomEvent("moved", { bubbles: true }));
 
 function stats() {
   const g = S.people.map(p => p.v), m = mean(g);
@@ -122,11 +131,11 @@ function draw() {
   const entered = people.enter().append("g").attr("class", "person draggable").attr("tabindex", 0)
     .attr("role", "slider").attr("aria-valuemin", 0).attr("aria-valuemax", 100)
     .each(function () { drawPerson(d3.select(this), SIZE); })
-    .call(d3.drag().on("drag", function (e, d) { d.v = clamp(x.invert(e.x)); draw(); }))
+    .call(d3.drag().on("drag", function (e, d) { d.v = clamp(x.invert(e.x)); draw(); }).on("end", function () { moved(this); }))
     .on("keydown", function (e, d) {
       const step = e.shiftKey ? 5 : 1;
-      if (e.key === "ArrowLeft") { d.v = clamp(d.v - step); draw(); e.preventDefault(); }
-      if (e.key === "ArrowRight") { d.v = clamp(d.v + step); draw(); e.preventDefault(); }
+      if (e.key === "ArrowLeft") { d.v = clamp(d.v - step); draw(); moved(this); e.preventDefault(); }
+      if (e.key === "ArrowRight") { d.v = clamp(d.v + step); draw(); moved(this); e.preventDefault(); }
     });
   entered.merge(people)
     .attr("transform", d => `translate(${x(d.v)},${BASE - 2 - lv.get(d.id) * SIZE * 0.9})`)
@@ -140,11 +149,11 @@ function draw() {
     g.append("line").attr("y1", -BASE + 20).attr("y2", 12).attr("stroke", "var(--truth)").attr("stroke-width", 4).attr("stroke-linecap", "round");
     g.append("path").attr("d", `M0,${-BASE + 20} l34,10 l-34,10 Z`).attr("fill", "var(--truth)");
     g.append("text").attr("class", "hand lbl").attr("x", 40).attr("y", -BASE + 36).attr("font-size", 24).style("fill", "var(--truth)");
-    g.call(d3.drag().on("drag", e => { S.truth = clamp(x.invert(e.x)); draw(); }))
-      .on("keydown", e => {
+    g.call(d3.drag().on("drag", e => { S.truth = clamp(x.invert(e.x)); draw(); }).on("end", function () { moved(this); }))
+      .on("keydown", function (e) {
         const step = e.shiftKey ? 5 : 1;
-        if (e.key === "ArrowLeft") { S.truth = clamp(S.truth - step); draw(); e.preventDefault(); }
-        if (e.key === "ArrowRight") { S.truth = clamp(S.truth + step); draw(); e.preventDefault(); }
+        if (e.key === "ArrowLeft") { S.truth = clamp(S.truth - step); draw(); moved(this); e.preventDefault(); }
+        if (e.key === "ArrowRight") { S.truth = clamp(S.truth + step); draw(); moved(this); e.preventDefault(); }
       });
     return g;
   }).attr("transform", `translate(${x(S.truth)},${BASE})`)
@@ -196,3 +205,51 @@ function drawStatus(st) {
     <div class="readout crowd"><div class="k">People closer to the truth than the crowd's average</div>
       <div class="v">${beats} of ${S.people.length}</div></div>`;
 }
+
+// ---------- guided story ----------
+let moves = 0;
+const side = () => ({ below: S.people.filter(p => p.v < S.truth).length, above: S.people.filter(p => p.v > S.truth).length });
+const closer = () => { const m = stats().m; return S.people.filter(p => Math.abs(p.v - S.truth) < Math.abs(m - S.truth)).length; };
+
+export const story = [
+  { setup: () => setPreset("All too high"),
+    text: `<p>In 2007 the complexity scientist Scott Page wrote down a short equation about crowds:</p>
+           <p><b>crowd's error = average error − diversity</b></p>
+           <p>It is not a finding from an experiment. It is arithmetic, true for every crowd. Let's see why.</p>` },
+  { target: ".stage-card", reveal: [".stage-card"], setup: () => setPreset("All too high"),
+    text: `<p>Seven people guess a number from 0 to 100. The <span style="color:var(--truth)">green flag</span> is the truth: 50.</p>
+           <p>All of them guessed too high. The red lines underneath show how far each one missed. The <span style="color:var(--crowd)">yellow ▲</span> is the crowd's average, 70: a miss of 20.</p>` },
+  { target: ".stage-card", place: "below",
+    text: `<p>You can move people. <b>Grab one</b> and drag them below the truth.</p>`,
+    waitFor: { event: "moved", target: "g.person", until: () => side().below > 0, prompt: "Drag a person to the left of the green flag." } },
+  { target: ".controls .readouts", reveal: [".controls"],
+    text: () => `<p>Now the truth is <b>bracketed</b>: ${side().below} below it, ${side().above} above. The crowd's average has moved to ${fmt(stats().m, 1)}.</p>
+                 <p>Only ${closer()} of ${S.people.length} people are now closer to the truth than the crowd.</p>` },
+  { target: ".chart-card", reveal: [".chart-card"],
+    text: () => `<p>Here is Page's equation with your crowd's numbers.</p>
+                 <p><b>Average error</b> is how wrong people are, on average. <b>Diversity</b> is how much they disagree with each other. Errors are squared, so a miss of 10 counts 100.</p>` },
+  { target: [".stage-card", ".chart-card"], setup: () => { moves = 0; },
+    text: `<p>Drag people around and watch the bars. The top bar, people's average error, is always exactly the other two put together: the crowd's error plus the diversity.</p>`,
+    waitFor: { event: "moved", target: "g.person", until: () => ++moves >= 3, prompt: "Drag people three times. Can you break the equation?" } },
+  { target: '[data-tour="preset-clones"]', reveal: ['[data-tour="presets"]'], place: "below",
+    text: `<p>What if everyone thinks alike? Try <b>Clones</b>: seven nearly identical guesses.</p>`,
+    waitFor: { event: "click", target: '[data-tour="preset-clones"]', prompt: "Click Clones." } },
+  { target: ".chart-card", setup: () => setPreset("Clones"),
+    text: `<p>Diversity is almost zero, so the crowd's error equals the average error. The crowd is exactly as wrong as a typical member, about 20 too high.</p>
+           <p>A crowd of clones is no wiser than one of them.</p>` },
+  { target: '[data-tour="preset-wild"]', place: "below",
+    text: `<p>Now the opposite: <b>Wild</b>, people who disagree a lot.</p>`,
+    waitFor: { event: "click", target: '[data-tour="preset-wild"]', prompt: "Click Wild." } },
+  { target: ".chart-card", setup: () => setPreset("Wild"),
+    text: `<p>Individually they are worse than the clones: a typical miss is about 31. But they miss in different directions, so diversity cancels almost all of it.</p>
+           <p>The crowd misses by under 4, closer to the truth than every one of them.</p>` },
+  { target: "g.truth",
+    text: `<p>The equation holds wherever the truth is. <b>Drag the green flag.</b></p>`,
+    waitFor: { event: "moved", target: "g.truth", prompt: "Drag the flag left or right." } },
+  { target: ".chart-card",
+    text: `<p>Diversity did not change. It depends only on how the guesses differ from each other, not on the truth.</p>
+           <p>Moving the truth changes how wrong everyone is, but the crowd always beats its average member by exactly the diversity.</p>` },
+  { reveal: ['[data-tour="addrm"]'],
+    text: `<p>That's Page's difference. A crowd is never worse than its average member, and it beats them by exactly how much they disagree.</p>
+           <p>So disagreement is not noise to remove: for the same individual errors, the more people disagree, the smaller the crowd's error. Next: can incentives stop everyone leaning on the same source? Try <a href="#/incentives">Collective incentives</a>.</p>` },
+];

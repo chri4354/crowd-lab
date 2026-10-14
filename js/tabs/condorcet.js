@@ -244,7 +244,7 @@ export const story = [
   { target: '[data-tour="thousand"]', reveal: ['[data-tour="thousand"]'], place: "below",
     text: `<p>Don't take the maths on trust. <b>Hold 1,000 votes</b> and count how often the majority was right.</p>`,
     waitFor: { event: "click", target: '[data-tour="thousand"]', prompt: "Hold 1,000 votes." } },
-  { target: ".chart-card", reveal: [".chart-card"],
+  { target: [".chart-card", '[data-tour="m"]'], reveal: [".chart-card"],
     text: `<p>This is Condorcet's <b>jury theorem</b>. The curve shows how often the majority is right, for juries of every size. The circle is your jury.</p>`,
     waitFor: { event: "input", target: '[data-tour="m"] input', prompt: "Move Voters and watch the circle climb towards 100%." } },
   { target: '[data-tour="p"]', reveal: ['[data-tour="p"]'], place: "below",

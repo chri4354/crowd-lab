@@ -128,6 +128,8 @@ svg .grid line { stroke: var(--line); stroke-dasharray: 2 4; }
 .story-card { position: fixed; z-index: 50; width: min(23rem, calc(100vw - 16px)); background: var(--card); color: var(--ink);
   border: 2px solid var(--ink); border-radius: 16px; box-shadow: var(--shadow); padding: .8rem 1rem .9rem; transition: left .25s ease, top .25s ease; }
 .story-card.sheet { left: 8px; right: 8px; bottom: 8px; top: auto; width: auto; }
+.story-card.sheet-top { top: 8px; bottom: auto; }
+.story-top { cursor: grab; touch-action: none; }
 .story-top { display: flex; justify-content: space-between; align-items: center; }
 .story-count { font-family: var(--hand); font-size: 1.1rem; color: var(--accent); }
 .story-x { border: 0; box-shadow: none; background: none; font-size: 1.4rem; line-height: 1; padding: 0 .2rem; color: var(--ink-soft); }

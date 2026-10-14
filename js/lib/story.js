@@ -1,7 +1,8 @@
 // Guided stories: a step-by-step walk through a tab, one idea at a time.
 //
 // A tab opts in by exporting `story`: an array of steps. Each step may have
-//   target   CSS selector (inside the tab) to point at; omit for a centred card
+//   target   CSS selector (inside the tab), or a list of them, to point at; the
+//            highlight covers all of them. Omit for a centred card
 //   text     HTML, or a function returning HTML (evaluated when the step opens)
 //   reveal   selectors to show from this step on; anything any step reveals is
 //            hidden until then, so the page builds up as the story goes
@@ -10,7 +11,9 @@
 //            fires `event` (e.g. "input", "click") on `target`, and `until()` is true
 //   place    "right" | "left" | "below" | "above" (default: wherever fits)
 //
-// The page stays fully usable during a story: the dimming is only visual.
+// The page stays fully usable during a story: the dimming is only visual. The card
+// is placed so it never covers what the reader is asked to use (the waitFor target),
+// and the reader can drag it away by its top bar.
 
 const KEY = "crowdlab-guided";
 
@@ -32,7 +35,7 @@ export function startStory(root, steps, { onEnd } = {}) {
   card.setAttribute("role", "dialog");
   card.setAttribute("aria-live", "polite");
   document.body.append(dim, card);
-  let i = -1, done = false, satisfied = false, detach = () => {};
+  let i = -1, done = false, satisfied = false, manual = false, detach = () => {};
 
   const applyReveal = () => {
     for (const sel of hidden) root.querySelectorAll(sel).forEach(n => n.classList.toggle("story-hidden", !revealed.has(sel)));
@@ -44,6 +47,7 @@ export function startStory(root, steps, { onEnd } = {}) {
   function go(k) {
     detach();
     i = Math.max(0, Math.min(steps.length - 1, k));
+    manual = false;
     const s = steps[i];
     revealed.clear();
     steps.slice(0, i + 1).forEach(t => (t.reveal || []).forEach(sel => revealed.add(sel)));
@@ -51,8 +55,12 @@ export function startStory(root, steps, { onEnd } = {}) {
     s.setup?.();
     satisfied = !s.waitFor;
     render();
-    const t = s.target && root.querySelector(s.target);
-    if (t) t.scrollIntoView({ block: "nearest", behavior: "smooth" });   // scroll only if it is out of view
+    // scroll only if needed; what the reader must use comes first, then what they should look at
+    const t = s.target && root.querySelector([].concat(s.target)[0]);
+    const u = s.waitFor && root.querySelector(s.waitFor.target);
+    const offscreen = n => { const r = n.getBoundingClientRect(); return r.top < 0 || r.bottom > innerHeight; };
+    const focus = u && offscreen(u) ? u : t;
+    if (focus) focus.scrollIntoView({ block: "nearest", behavior: "smooth" });
     if (s.waitFor) {
       const w = s.waitFor;
       // check after the tab has handled the event, so `until` sees the new state
@@ -86,37 +94,69 @@ export function startStory(root, steps, { onEnd } = {}) {
     card.querySelector(".story-x").onclick = () => end();
     card.querySelector(".story-back")?.addEventListener("click", () => go(i - 1));
     card.querySelector(".story-next").onclick = () => (last ? end() : go(i + 1));
+    card.querySelector(".story-top").addEventListener("pointerdown", grab);
     position();
+  }
+
+  // drag the card by its top bar, out of the way of whatever is underneath
+  function grab(e) {
+    if (e.target.closest("button")) return;
+    e.preventDefault();
+    const r = card.getBoundingClientRect(), dx = e.clientX - r.left, dy = e.clientY - r.top;
+    const move = ev => {
+      manual = true;
+      card.style.left = `${Math.max(0, Math.min(innerWidth - r.width, ev.clientX - dx))}px`;
+      card.style.top = `${Math.max(0, Math.min(innerHeight - r.height, ev.clientY - dy))}px`;
+    };
+    const up = () => { removeEventListener("pointermove", move); removeEventListener("pointerup", up); };
+    addEventListener("pointermove", move);
+    addEventListener("pointerup", up);
+  }
+
+  // the bounding box of everything matching one selector or a list of them
+  function rectOf(sel) {
+    if (!sel) return null;
+    const rs = [].concat(sel).flatMap(x => [...root.querySelectorAll(x)]).map(n => n.getBoundingClientRect()).filter(r => r.width || r.height);
+    if (!rs.length) return null;
+    const l = Math.min(...rs.map(r => r.left)), t = Math.min(...rs.map(r => r.top));
+    const r = Math.max(...rs.map(r => r.right)), b = Math.max(...rs.map(r => r.bottom));
+    return { left: l, top: t, right: r, bottom: b, width: r - l, height: b - t };
   }
 
   function position() {
     if (done) return;
-    const s = steps[i], pad = 8, gap = 14;
-    const t = s.target && root.querySelector(s.target);
+    const s = steps[i], pad = 8, gap = 14, m = 6;
+    const r = rectOf(s.target), use = rectOf(s.waitFor?.target);
     const vw = innerWidth, vh = innerHeight;
     const cw = card.offsetWidth, ch = card.offsetHeight;
-    if (!t || vw < 760) {
-      dim.classList.toggle("full", !t);
-      if (t) placeHole(t.getBoundingClientRect(), pad); else Object.assign(dim.style, { left: "0", top: "0", width: "100vw", height: "100vh" });
-      card.classList.toggle("sheet", vw < 760);
-      if (vw >= 760) Object.assign(card.style, { left: `${(vw - cw) / 2}px`, top: `${(vh - ch) / 2}px` });
-      else Object.assign(card.style, { left: "", top: "" });
-      return;
-    }
-    card.classList.remove("sheet");
-    dim.classList.remove("full");
-    const r = t.getBoundingClientRect();
-    placeHole(r, pad);
-    const room = { right: vw - r.right, left: r.left, below: vh - r.bottom, above: r.top };
-    const side = s.place && room[s.place] > (s.place === "right" || s.place === "left" ? cw : ch) + gap ? s.place
-      : room.right > cw + gap ? "right" : room.left > cw + gap ? "left" : room.below > ch + gap ? "below" : "above";
-    let x, y;
-    if (side === "right") { x = r.right + gap; y = r.top + r.height / 2 - ch / 2; }
-    if (side === "left") { x = r.left - gap - cw; y = r.top + r.height / 2 - ch / 2; }
-    if (side === "below") { x = r.left + r.width / 2 - cw / 2; y = r.bottom + gap; }
-    if (side === "above") { x = r.left + r.width / 2 - cw / 2; y = r.top - gap - ch; }
-    card.style.left = `${Math.max(8, Math.min(vw - cw - 8, x))}px`;
-    card.style.top = `${Math.max(8, Math.min(vh - ch - 8, y))}px`;
+    dim.classList.toggle("full", !r);
+    if (r) placeHole(r, pad); else Object.assign(dim.style, { left: "0", top: "0", width: "100vw", height: "100vh" });
+    if (manual) return;
+    // phones: a sheet along the bottom, or the top if the reader has to use the lower half
+    card.classList.toggle("sheet", vw < 760);
+    card.classList.toggle("sheet-top", vw < 760 && !!use && (use.top + use.bottom) / 2 > vh / 2);
+    if (vw < 760) { Object.assign(card.style, { left: "", top: "" }); return; }
+    if (!r) { Object.assign(card.style, { left: `${(vw - cw) / 2}px`, top: `${(vh - ch) / 2}px` }); return; }
+
+    const clampBox = (x, y) => {
+      const l = Math.max(8, Math.min(vw - cw - 8, x)), t = Math.max(8, Math.min(vh - ch - 8, y));
+      return { left: l, top: t, right: l + cw, bottom: t + ch };
+    };
+    const at = {
+      right: () => clampBox(r.right + gap, r.top + r.height / 2 - ch / 2),
+      left: () => clampBox(r.left - gap - cw, r.top + r.height / 2 - ch / 2),
+      below: () => clampBox(r.left + r.width / 2 - cw / 2, r.bottom + gap),
+      above: () => clampBox(r.left + r.width / 2 - cw / 2, r.top - gap - ch),
+    };
+    const sides = [...new Set([s.place, "right", "left", "below", "above"].filter(Boolean))].map(k => at[k]());
+    const corners = [[vw, vh], [vw, 0], [0, vh], [0, 0]].map(([x, y]) => clampBox(x ? vw : 0, y ? vh : 0));
+    const hits = (a, b) => b && a.left < b.right + m && a.right > b.left - m && a.top < b.bottom + m && a.bottom > b.top - m;
+    // best: clear of both the highlight and what the reader must use; then clear of what they must use
+    const box = sides.find(c => !hits(c, r) && !hits(c, use))
+      || [...sides, ...corners].find(c => !hits(c, use))
+      || sides[0];
+    card.style.left = `${box.left}px`;
+    card.style.top = `${box.top}px`;
   }
 
   function placeHole(r, pad) {
