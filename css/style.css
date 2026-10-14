@@ -1,33 +1,35 @@
 :root {
-  --paper: #fbf6ec;
-  --paper-2: #f3ead8;
-  --ink: #2b2a33;
-  --ink-soft: #5d5a66;
-  --line: #d9cdb4;
+  /* PSi palette (Brand Guidelines 2023, 2026 updates): purples for paper, ink and accent;
+     green/red keep their right/wrong meaning; gold for the crowd. Fonts unchanged. */
+  --paper: #F5F0FF;
+  --paper-2: #E4D7FF;
+  --ink: #2C154D;
+  --ink-soft: #6B5A85;
+  --line: #D3C1FA;
   --truth: #1f8a70;
-  --wrong: #e0603f;
-  --crowd: #e9a91a;
-  --person: #4a6fa5;
-  --accent: #7b4fb0;
-  --card: #fffdf8;
-  --shadow: 0 2px 0 #d9cdb4, 0 6px 18px rgba(80, 60, 20, .08);
+  --wrong: #F05549;
+  --crowd: #F7B23F;
+  --person: #3B4BE4;
+  --accent: #854DFF;
+  --card: #FFFFFF;
+  --shadow: 0 2px 0 #D3C1FA, 0 6px 18px rgba(44, 21, 77, .08);
   --hand: "Patrick Hand", "Comic Sans MS", cursive;
   --body: "Nunito", system-ui, sans-serif;
   font-size: clamp(15px, 0.55vw + 10px, 20px);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #1f1d24; --paper-2: #29262f; --ink: #f1ece2; --ink-soft: #b9b2a6;
-    --line: #4a4552; --card: #2a2730; --truth: #3cc39b; --wrong: #ff7d5c;
-    --crowd: #f2bd3a; --person: #86a6dc; --accent: #b48ce6;
-    --shadow: 0 2px 0 #14121a, 0 6px 18px rgba(0,0,0,.3);
+    --paper: #1E0F36; --paper-2: #2C154D; --ink: #F5F0FF; --ink-soft: #C9B8EC;
+    --line: #4A3470; --card: #2A1748; --truth: #3cc39b; --wrong: #FF7A6E;
+    --crowd: #F7B23F; --person: #8C97FF; --accent: #B08CFF;
+    --shadow: 0 2px 0 #12081F, 0 6px 18px rgba(0,0,0,.35);
   }
 }
 :root[data-theme="dark"] {
-  --paper: #1f1d24; --paper-2: #29262f; --ink: #f1ece2; --ink-soft: #b9b2a6;
-  --line: #4a4552; --card: #2a2730; --truth: #3cc39b; --wrong: #ff7d5c;
-  --crowd: #f2bd3a; --person: #86a6dc; --accent: #b48ce6;
-  --shadow: 0 2px 0 #14121a, 0 6px 18px rgba(0,0,0,.3);
+  --paper: #1E0F36; --paper-2: #2C154D; --ink: #F5F0FF; --ink-soft: #C9B8EC;
+  --line: #4A3470; --card: #2A1748; --truth: #3cc39b; --wrong: #FF7A6E;
+  --crowd: #F7B23F; --person: #8C97FF; --accent: #B08CFF;
+  --shadow: 0 2px 0 #12081F, 0 6px 18px rgba(0,0,0,.35);
 }
 
 * { box-sizing: border-box; }
