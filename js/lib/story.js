@@ -52,7 +52,7 @@ export function startStory(root, steps, { onEnd } = {}) {
     satisfied = !s.waitFor;
     render();
     const t = s.target && root.querySelector(s.target);
-    if (t) t.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (t) t.scrollIntoView({ block: "nearest", behavior: "smooth" });   // scroll only if it is out of view
     if (s.waitFor) {
       const w = s.waitFor;
       // check after the tab has handled the event, so `until` sees the new state

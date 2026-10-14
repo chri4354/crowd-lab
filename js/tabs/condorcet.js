@@ -5,7 +5,7 @@ const W = 900, H = 380;
 const CW = 900, CH = 260, CM = { l: 64, r: 30, t: 20, b: 46 };
 const N_MAX = 101;
 
-let S, root;
+let S, root, ctl;
 
 export function mount(el) {
   root = el;
@@ -30,19 +30,24 @@ export function mount(el) {
   const c = el.querySelector(".controls");
   c.innerHTML = `<h2>The jury</h2>`;
   const reset = () => { S.tally = null; vote(); };
-  c.appendChild(slider({ label: "Chance each voter is right", min: 0.3, max: 0.9, step: 0.01, value: S.p,
-    format: v => `${Math.round(v * 100)}%`, hint: "On average. 50% is a coin toss.", onInput: v => { S.p = v; reset(); } }));
-  c.appendChild(slider({ label: "Voters", min: 0, max: (N_MAX - 1) / 2, value: S.m,
-    format: m => 2 * m + 1, hint: "Always odd, so there are no ties.", onInput: m => { S.m = m; reset(); } }));
-  c.appendChild(slider({ label: "How much voters differ", min: 0, max: 0.4, step: 0.01, value: S.spread,
-    format: v => (v === 0 ? "none" : `± ${Math.round(v * 100)} pts`),
-    hint: "Some voters better, some worse — the average stays put.", onInput: v => { S.spread = v; reset(); } }));
-  c.appendChild(slider({ label: "Who copies an opinion leader", min: 0, max: 0.9, step: 0.05, value: S.follow,
-    format: v => `${Math.round(v * 100)}%`,
-    hint: "Copiers vote however the leader (★) votes.", onInput: v => { S.follow = v; reset(); } }));
+  ctl = {
+    p: slider({ label: "Chance each voter is right", min: 0.3, max: 0.9, step: 0.01, value: S.p, tour: "p",
+      format: v => `${Math.round(v * 100)}%`, hint: "On average. 50% is a coin toss.", onInput: v => { S.p = v; reset(); } }),
+    m: slider({ label: "Voters", min: 0, max: (N_MAX - 1) / 2, value: S.m, tour: "m",
+      format: m => 2 * m + 1, hint: "Always odd, so there are no ties.", onInput: m => { S.m = m; reset(); } }),
+    spread: slider({ label: "How much voters differ", min: 0, max: 0.4, step: 0.01, value: S.spread, tour: "spread",
+      format: v => (v === 0 ? "none" : `± ${Math.round(v * 100)} pts`),
+      hint: "Some voters better, some worse — the average stays put.", onInput: v => { S.spread = v; reset(); } }),
+    follow: slider({ label: "Who copies an opinion leader", min: 0, max: 0.9, step: 0.05, value: S.follow, tour: "follow",
+      format: v => `${Math.round(v * 100)}%`,
+      hint: "Copiers vote however the leader (★) votes.", onInput: v => { S.follow = v; reset(); } }),
+  };
+  Object.values(ctl).forEach(el => c.appendChild(el));
   const row = document.createElement("div"); row.className = "btn-row";
   row.appendChild(button("Hold a vote", vote, "primary"));
+  row.lastChild.dataset.tour = "vote";
   row.appendChild(button("Hold 1,000 votes", thousand));
+  row.lastChild.dataset.tour = "thousand";
   c.appendChild(row);
   vote();
 }
@@ -205,3 +210,62 @@ function drawChart() {
   svg.append("circle").attr("cx", x(n)).attr("cy", y(v)).attr("r", 10).attr("fill", "var(--card)")
     .attr("stroke", "var(--ink)").attr("stroke-width", 3);
 }
+
+// ---------- guided story ----------
+// Put the jury into a given state (moving the sliders to match) and hold a fresh vote.
+function setJury(patch) {
+  Object.assign(S, patch, { tally: null });
+  for (const k of ["p", "m", "spread", "follow"]) ctl[k].set(S[k]);
+  vote();
+}
+const pct = v => `${Math.round(v * 100)}%`;
+const base = { p: 0.6, spread: 0, follow: 0 };
+let clicks = 0;
+
+export const story = [
+  { setup: () => setJury({ ...base, m: 0 }),
+    text: `<p><b>Paris, 1785.</b> The Marquis de Condorcet asks a question that still shapes juries, parliaments and committees.</p>
+           <p>If each person is only a little better than a coin toss at getting the right answer, can a group of them be trusted?</p>` },
+  { target: ".stage-card", reveal: [".stage-card"], setup: () => setJury({ ...base, m: 0 }),
+    text: () => `<p>Here is a jury of one. They have a 60% chance of being right (✓) and a 40% chance of being wrong (✗).</p>
+                 <p>This time they were ${S.jury[0].right ? "right" : "wrong"}.</p>` },
+  { target: '[data-tour="vote"]', reveal: [".controls", '[data-tour="vote"]'], place: "below", setup: () => { clicks = 0; },
+    text: `<p><b>Hold a vote</b> a few times. Every vote is a new case with a right answer.</p>`,
+    waitFor: { event: "click", target: '[data-tour="vote"]', until: () => ++clicks >= 4, prompt: "Hold four votes. How often is this one person right?" } },
+  { target: '[data-tour="m"]', reveal: ['[data-tour="m"]'], place: "below", setup: () => setJury({ ...base, m: S.m }),
+    text: `<p>Now <b>add voters</b>. Each one is just as good, 60%, and makes up their own mind. The jury goes with the majority.</p>`,
+    waitFor: { event: "input", target: '[data-tour="m"] input', until: () => nNow() >= 11, prompt: "Drag Voters to 11 or more." } },
+  { target: ".stage-card",
+    text: () => `<p>Green voters got it right, red ones wrong. The headline says what the majority decided.</p>
+                 <p>Plenty of individuals are still wrong. Yet the majority needs only more than half to be right.</p>` },
+  { target: ".readouts", reveal: [".readouts"],
+    text: () => `<p>One voter alone is right ${pct(S.p)} of the time. A majority of ${nNow()} is right ${(pMajority(nNow()) * 100).toFixed(1)}% of the time.</p>
+                 <p>These are exact probabilities, not luck.</p>` },
+  { target: '[data-tour="thousand"]', reveal: ['[data-tour="thousand"]'], place: "below",
+    text: `<p>Don't take the maths on trust. <b>Hold 1,000 votes</b> and count how often the majority was right.</p>`,
+    waitFor: { event: "click", target: '[data-tour="thousand"]', prompt: "Hold 1,000 votes." } },
+  { target: ".chart-card", reveal: [".chart-card"],
+    text: `<p>This is Condorcet's <b>jury theorem</b>. The curve shows how often the majority is right, for juries of every size. The circle is your jury.</p>`,
+    waitFor: { event: "input", target: '[data-tour="m"] input', prompt: "Move Voters and watch the circle climb towards 100%." } },
+  { target: '[data-tour="p"]', reveal: ['[data-tour="p"]'], place: "below",
+    text: `<p>But it cuts both ways. Make each voter <b>slightly worse</b> than a coin toss.</p>`,
+    waitFor: { event: "input", target: '[data-tour="p"] input', until: () => S.p < 0.5, prompt: "Drag the chance below 50%." } },
+  { target: ".chart-card",
+    text: () => `<p>The curve turns red and dives. With voters right ${pct(S.p)} of the time, a majority of ${nNow()} is right only ${(pMajority(nNow()) * 100).toFixed(1)}% of the time.</p>
+                 <p>A big jury magnifies whatever its members have: a little skill becomes near certainty, a little error becomes near certain error.</p>` },
+  { target: '[data-tour="spread"]', reveal: ['[data-tour="spread"]'], place: "below", setup: () => setJury({ ...base, m: Math.max(S.m, 10) }),
+    text: `<p>I've set voters back to 60%. Real voters are not identical: some are experts, some are guessing. <b>Make them differ</b>, keeping the same average.</p>`,
+    waitFor: { event: "input", target: '[data-tour="spread"] input', until: () => S.spread >= 0.2, prompt: "Drag How much voters differ to ±20 points or more." } },
+  { target: ".chart-card",
+    text: `<p>Paler voters are worse, darker ones better. Some are now worse than a coin toss, and yet the majority does slightly <i>better</i> than the dashed line of identical voters.</p>
+           <p>What matters is the average, not whether everyone is good.</p>` },
+  { target: '[data-tour="follow"]', reveal: ['[data-tour="follow"]'], place: "below", setup: () => setJury({ ...base, m: Math.max(S.m, 10) }),
+    text: `<p>Back to identical voters. Now let some of them <b>copy an opinion leader</b> (★) instead of making up their own minds.</p>`,
+    waitFor: { event: "input", target: '[data-tour="follow"] input', until: () => S.follow >= 0.5, prompt: "Drag the copying slider to 50% or more." } },
+  { target: ".chart-card",
+    text: () => `<p>The curve flattens at about ${pct(S.p)}, the leader's own accuracy, however big the jury. Copiers add votes, but no information.</p>
+                 <p>With enough of them, the jury <i>is</i> the leader.</p>` },
+  { text: `<p>That's Condorcet's jury. A majority of <b>independent</b> voters, each a little better than chance, is almost always right, even if many of them are weak.</p>
+           <p>Make them worse than chance, or let them copy, and it fails. Next: why does <i>diversity</i> help a crowd? Try <a href="#/page">Page's difference</a>.</p>` },
+];
+
