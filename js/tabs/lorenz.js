@@ -11,9 +11,9 @@ const W = 900, H = 450, M = { l: 112, r: 24, t: 44, b: 40 };
 const CW = 900, CH = 230, CM = { l: 56, r: 16, t: 34, b: 40 };
 const ROUNDS = 5, DOM = [-2, 2];                 // log10(estimate / truth)
 const COND = [
-  { value: "none", label: "See nothing", color: "var(--series-0)", dash: true },
-  { value: "mean", label: "See the average", color: "var(--series-1)" },
-  { value: "all", label: "See every guess", color: "var(--series-2)" },
+  { value: "none", label: "See nothing", color: "var(--series-0, #7d7a85)", dash: true },
+  { value: "mean", label: "See the average", color: "var(--series-1, #3B4BE4)" },
+  { value: "all", label: "See every guess", color: "var(--series-2, #e2612c)" },
 ];
 const SIMS = 300;
 
@@ -305,7 +305,7 @@ function drawChart() {
       g.selectAll(null).data(pts).join("circle").attr("cx", d => d[0]).attr("cy", d => d[1]).attr("r", 4).attr("fill", c.color);
     }
   });
-  root.querySelector(".chart-legend").innerHTML = conds.map(c =>
+  root.querySelector(".chart-legend").innerHTML = `<span class="lead">Between guesses, people:</span>` + conds.map(c =>
     `<span class="key"><span class="swatch${c.dash ? " dashed" : ""}" style="background:${c.color}"></span>${c.label}</span>`).join("");
 }
 

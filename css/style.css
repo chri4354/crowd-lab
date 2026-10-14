@@ -91,7 +91,8 @@ button.primary { background: var(--crowd); color: #2b2a33; }
 .chart-card { margin-top: 1rem; }
 .chart-legend { display: flex; flex-wrap: wrap; gap: .3rem 1.2rem; font-size: .85rem; color: var(--ink-soft); margin: 0 0 .3rem; }
 .chart-legend .swatch { display: inline-block; width: 1.4rem; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: .4rem; }
-.chart-legend .swatch.dashed { background: repeating-linear-gradient(90deg, var(--series-0) 0 6px, transparent 6px 10px) !important; }
+.chart-legend .lead { color: var(--ink); font-weight: 700; }
+.chart-legend .swatch.dashed { background: repeating-linear-gradient(90deg, var(--series-0, #7d7a85) 0 6px, transparent 6px 10px) !important; }
 
 /* svg text & marks */
 svg text { font-family: var(--body); fill: var(--ink); }

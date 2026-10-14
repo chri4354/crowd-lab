@@ -12,10 +12,10 @@ const W = 900, H = 400, NET = 360, M = { l: 470, r: 24, t: 40, b: 40 };
 const CW = 900, CH = 240, CM = { l: 56, r: 16, t: 34, b: 40 };
 const ROUNDS = 3, SIMS = 300, DOM = [-3, 3];     // in units of the spread of first guesses
 const NETWORKS = [
-  { value: "decentralized", short: "4 others", label: "Four random others", color: "var(--series-1)" },
-  { value: "centralized", short: "A hub", label: "One hub", color: "var(--series-2)" },
-  { value: "none", short: "Nobody", label: "Nobody", color: "var(--series-0)", dash: true },
-  { value: "everyone", short: "Everyone", label: "Everyone (like Lorenz)", color: "var(--series-3)", simOnly: true },
+  { value: "decentralized", short: "4 others", label: "Four random others", color: "var(--series-1, #3B4BE4)" },
+  { value: "centralized", short: "A hub", label: "One hub", color: "var(--series-2, #e2612c)" },
+  { value: "none", short: "Nobody", label: "Nobody", color: "var(--series-0, #7d7a85)", dash: true },
+  { value: "everyone", short: "Everyone", label: "Everyone (like Lorenz)", color: "var(--series-3, #12966a)", simOnly: true },
 ];
 // below the truth / about right / above the truth (a diverging pair with a neutral middle)
 const tint = d3.scaleLinear([-1.5, 0, 1.5], ["#2a78d6", "#b9b6ab", "#eb6834"]).clamp(true);
@@ -317,7 +317,7 @@ function drawChart() {
   root.querySelector(".chart-title").textContent = data
     ? "Every group and question in the experiment"
     : `${SIMS} imaginary groups of ${S.n}, for each kind of network`;
-  root.querySelector(".chart-legend").innerHTML = nets.map(c =>
+  root.querySelector(".chart-legend").innerHTML = `<span class="lead">Each person sees the average of:</span>` + nets.map(c =>
     `<span class="key"><span class="swatch${c.dash ? " dashed" : ""}" style="background:${c.color}"></span>${c.label}</span>`).join("");
   const svg = d3.select(root.querySelector("svg.chart"));
   svg.selectAll("*").remove();
@@ -329,16 +329,16 @@ function drawChart() {
     const x = d3.scaleLinear([1, ROUNDS], [CM.l, half - CM.r - 20]);
     const lines = nets.map(n => ({ ...n, v: d3.range(ROUNDS).map(r => mean(trials[n.value].map(t => groupErr(t.z[r])))) }));
     const [lo, hi] = d3.extent(lines.flatMap(l => l.v));
-    const y = d3.scaleLinear([Math.max(0, lo - (hi - lo) * 0.4), hi + (hi - lo) * 0.3], [CH - CM.b, CM.t]).nice();
+    const y = d3.scaleLinear([Math.max(0, lo - (hi - lo) * 0.4), hi + (hi - lo) * 0.3], [CH - CM.b, CM.t + 14]).nice();
     axes(g, x, y, half - 20, "guess", d3.format(".1f"));
     g.append("text").attr("x", CM.l).attr("y", 18).attr("font-size", 16).attr("font-weight", 700).text("How far off the group's average is");
+    g.append("text").attr("x", CM.l).attr("y", 36).attr("font-size", 13).style("fill", "var(--ink-soft)")
+      .text("1.0 = the usual spread of first guesses (their standard deviation)");
     for (const l of lines) {
       const pts = l.v.map((v, r) => [x(r + 1), y(v)]);
       g.append("path").datum(pts).attr("fill", "none").attr("stroke", l.color).attr("stroke-width", 3.5).attr("stroke-dasharray", l.dash ? "7 5" : null).attr("d", d3.line());
       g.selectAll(null).data(pts).join("circle").attr("cx", d => d[0]).attr("cy", d => d[1]).attr("r", 4).attr("fill", l.color);
     }
-    g.append("text").attr("x", CM.l + 4).attr("y", CH - CM.b - 6).attr("font-size", 13).style("fill", "var(--ink-soft)")
-      .text("in spreads of first guesses");
   }
 
   const g = svg.append("g").attr("transform", `translate(${half},0)`);
@@ -379,7 +379,8 @@ function axes(g, x, y, width, xLabel, yFormat) {
   g.append("g").attr("class", "grid").attr("transform", `translate(${CM.l},0)`)
     .call(d3.axisLeft(y).ticks(4).tickSize(-(width - CM.l - CM.r)).tickFormat("")).select(".domain").remove();
   g.append("g").attr("class", "axis").attr("transform", `translate(0,${CH - CM.b})`)
-    .call(d3.axisBottom(x).ticks(Math.min(5, x.domain()[1] - x.domain()[0] < 5 ? 3 : 5)).tickFormat(d3.format(x.domain()[0] < 0 ? "+.1f" : "d")));
+    .call(x.domain()[0] >= 1 ? d3.axisBottom(x).tickValues(d3.range(x.domain()[0], x.domain()[1] + 1)).tickFormat(d3.format("d"))
+      : d3.axisBottom(x).ticks(5).tickFormat(d3.format("+.1f")));
   g.append("g").attr("class", "axis").attr("transform", `translate(${CM.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(yFormat));
   g.append("text").attr("x", width - CM.r).attr("y", CH - 4).attr("text-anchor", "end").attr("font-size", 13).style("fill", "var(--ink-soft)").text(xLabel);
 }
