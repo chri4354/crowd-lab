@@ -112,16 +112,16 @@ function buildControls() {
   c.innerHTML = "";
   if (S.mode === "data") {
     c.innerHTML = `<h2>The experiment</h2>`;
-    const qc = document.createElement("div"); qc.className = "control";
+    const qc = document.createElement("div"); qc.className = "control"; qc.dataset.tour = "question";
     qc.innerHTML = `<label><span>Question</span></label><select>${QUESTIONS.map(q =>
       `<option value="${q.id}"${q.id === S.q ? " selected" : ""}>${q.text}</option>`).join("")}</select>`;
     qc.querySelector("select").addEventListener("change", e => { S.q = +e.target.value; S.g = 0; S.shown = 1; buildControls(); draw(); });
     c.appendChild(qc);
-    const cc = document.createElement("div"); cc.className = "control";
+    const cc = document.createElement("div"); cc.className = "control"; cc.dataset.tour = "cond";
     cc.innerHTML = `<label><span>Between guesses, people…</span></label>`;
     cc.appendChild(seg(COND.map(({ value, label }) => ({ value, label })), S.cond, v => { S.cond = v; S.g = 0; S.shown = 1; buildControls(); draw(); }));
     c.appendChild(cc);
-    const gc = document.createElement("div"); gc.className = "control";
+    const gc = document.createElement("div"); gc.className = "control"; gc.dataset.tour = "group";
     gc.innerHTML = `<label><span>Group</span></label>`;
     gc.appendChild(seg([0, 1, 2, 3].map(i => ({ value: i, label: String(i + 1) })), S.g, v => { S.g = v; S.shown = 1; draw(); }));
     gc.insertAdjacentHTML("beforeend", `<p class="hint">Four groups of 12 answered each question this way.</p>`);
@@ -129,14 +129,14 @@ function buildControls() {
   } else {
     c.innerHTML = `<h2>An imaginary group</h2>`;
     const re = () => { newCrowd(); S.shown = ROUNDS; draw(); };
-    c.appendChild(slider({ label: "People", min: 5, max: 100, value: S.n, onInput: v => { S.n = v; re(); } }));
-    c.appendChild(slider({ label: "First guesses are typically", min: -1, max: 1, step: 0.05, value: S.bias,
+    c.appendChild(slider({ label: "People", min: 5, max: 100, value: S.n, tour: "n", onInput: v => { S.n = v; re(); } }));
+    c.appendChild(slider({ label: "First guesses are typically", min: -1, max: 1, step: 0.05, value: S.bias, tour: "bias",
       format: v => offBy(v), hint: "People often underestimate large numbers.", onInput: v => { S.bias = v; re(); } }));
-    c.appendChild(slider({ label: "How much first guesses differ", min: 0.1, max: 1, step: 0.05, value: S.spread,
+    c.appendChild(slider({ label: "How much first guesses differ", min: 0.1, max: 1, step: 0.05, value: S.spread, tour: "spread",
       format: v => times(v), hint: "A typical guess is this many times off the typical guess.", onInput: v => { S.spread = v; re(); } }));
-    c.appendChild(slider({ label: "How far people move towards the average", min: 0, max: 0.9, step: 0.05, value: S.pull,
+    c.appendChild(slider({ label: "How far people move towards the average", min: 0, max: 0.9, step: 0.05, value: S.pull, tour: "pull",
       format: v => `${Math.round(v * 100)}%`, hint: "On average; some move more, some less.", onInput: v => { S.pull = v; re(); } }));
-    const cc = document.createElement("div"); cc.className = "control";
+    const cc = document.createElement("div"); cc.className = "control"; cc.dataset.tour = "simcond";
     cc.innerHTML = `<label><span>Between guesses, people…</span></label>`;
     cc.appendChild(seg(COND.slice(0, 2).map(({ value, label }) => ({ value, label })), S.simCond, v => { S.simCond = v; re(); }));
     c.appendChild(cc);
@@ -145,8 +145,11 @@ function buildControls() {
   const row = document.createElement("div"); row.className = "btn-row";
   if (S.mode === "data") {
     row.appendChild(button("Next round", next, "primary"));
+    row.lastChild.dataset.tour = "next";
     row.appendChild(button("All rounds", () => { S.shown = ROUNDS; draw(); }));
+    row.lastChild.dataset.tour = "all";
     row.appendChild(button("Start again", () => { S.shown = 1; draw(); }));
+    row.lastChild.dataset.tour = "again";
   } else {
     row.appendChild(button("Ask a new group", () => { newCrowd(); draw(); }, "primary"));
   }
@@ -305,3 +308,73 @@ function drawChart() {
   root.querySelector(".chart-legend").innerHTML = conds.map(c =>
     `<span class="key"><span class="swatch" style="background:${c.color}"></span>${c.label}</span>`).join("");
 }
+
+// ---------- guided story ----------
+// Show one real group (question q, condition, group g) with the first `shown` guesses.
+function setData(q, cond, g, shown) {
+  Object.assign(S, { mode: "data", q, cond, g, shown });
+  root.querySelectorAll(".mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === "data")));
+  buildControls();
+  S.shown = shown;
+  draw();
+}
+// an imaginary group with the given first-guess bias, seeing the ordinary average
+function setWhatIf(bias) {
+  Object.assign(S, { mode: "whatif", n: 12, bias, spread: 0.5, pull: 0.4, simCond: "mean" });
+  root.querySelectorAll(".mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === "whatif")));
+  newCrowd();
+  buildControls();
+  draw();
+}
+// the two real groups the story follows, both on question 3 (new residents of Zurich)
+const SAW_AVERAGE = [3, "mean", 3], SAW_NOTHING = [3, "none", 2];
+const rows = () => current().logs;
+const span = r => { const v = valid(rows()[r]); return `${times(Math.min(...v))} to ${times(Math.max(...v))}`; };
+const conf = k => fmt(mean(current().conf.map(c => c[k])), 1);
+
+export const story = [
+  { setup: () => setData(...SAW_AVERAGE, 1),
+    text: `<p><b>Zurich, 2008.</b> Jan Lorenz and colleagues sat 144 students in groups of 12 and asked them questions with a numerical answer, such as how many new residents Zurich gained in 2006. Guesses were paid by how close they were.</p>
+           <p>Each person guessed five times. Between guesses, some groups saw nothing, some saw the average of everyone's last guesses, some saw every guess. Did seeing others make the crowd wiser?</p>` },
+  { target: ".stage-card", reveal: [".stage-card"], setup: () => setData(...SAW_AVERAGE, 1),
+    text: () => `<p>Here are the first guesses of one group, made alone. The truth was ${fmt(question().truth)} (green line).</p>
+                 <p>The axis is logarithmic: each step is ten times bigger. These guesses range from ${span(0)} the truth. The <span style="color:var(--crowd)">yellow line</span> is the crowd's answer, the geometric mean.</p>` },
+  { target: ".readouts", reveal: [".readouts"],
+    text: () => `<p>The crowd's answer is ${offBy(crowdLog(rows()[0]))}. Guesses typically differ by ${times(spreadLog(rows()[0]))}.</p>
+                 <p>"How central the truth is" counts how many pairs of guesses, lowest with highest, second lowest with second highest and so on, still have the truth between them. Here ${centrality(rows()[0])} of 6.</p>` },
+  { target: '[data-tour="next"]', reveal: [".controls", '[data-tour="next"]'], place: "below", setup: () => setData(...SAW_AVERAGE, 1),
+    text: `<p>Before each new guess, this group saw the average of everyone's last guesses (▲). <b>Press Next round</b> to reveal guesses 2 to 5.</p>`,
+    waitFor: { event: "click", target: '[data-tour="next"]', until: () => S.shown === ROUNDS, prompt: "Press Next round until all five guesses show." } },
+  { target: ".stage-card", setup: () => setData(...SAW_AVERAGE, ROUNDS),
+    text: () => `<p>Follow the grey paths: people move towards the average, and towards each other. Guesses that differed by ${times(spreadLog(rows()[0]))} now differ by only ${times(spreadLog(rows()[4]))}.</p>` },
+  { target: ".readouts",
+    text: () => `<p>At first, ${centrality(rows()[0])} pairs of guesses had the truth between them. By the fifth guess, ${centrality(rows()[4]) === 0 ? "none did: the truth now lies outside every guess" : `only ${centrality(rows()[4])}`}.</p>
+                 <p>Yet people grew more confident, from ${conf(0)} to ${conf(1)} on a scale of 1 to 6. Less diverse, more sure.</p>` },
+  { target: '[data-tour="cond"]', reveal: ['[data-tour="cond"]'], place: "below",
+    text: `<p>Compare a group that saw <b>nothing</b> between guesses.</p>`,
+    waitFor: { event: "click", target: '[data-tour="cond"] button[data-value="none"]', prompt: "Click “See nothing”." } },
+  { target: ".stage-card", setup: () => setData(...SAW_NOTHING, ROUNDS),
+    text: () => `<p>A group on the same question that saw nothing. People still change their minds a little, but they do not close in on each other: guesses differ by ${times(spreadLog(rows()[0]))} at first and ${times(spreadLog(rows()[4]))} at the end.</p>
+                 <p>The truth stays central (${centrality(rows()[0])} of 6, then ${centrality(rows()[4])}), and confidence does not rise (${conf(0)} to ${conf(1)}).</p>` },
+  { target: ".chart-card", reveal: [".chart-card", '[data-tour="question"]', '[data-tour="group"]', '[data-tour="all"]', '[data-tour="again"]'],
+    text: `<p>Now all 72 groups. Seeing others, the average (blue) or every guess (purple), shrinks the spread and pushes the truth towards the edge of the guesses. Seeing nothing (grey) changes little.</p>
+           <p>Lorenz et al. called this the <b>social influence effect</b>.</p>` },
+  { target: ".chart-card",
+    text: `<p>Now the middle panel. Seeing the average also made the crowd's answer better: in 20 of 24 groups. Seeing every guess did not help.</p>
+           <p>So is influence good or bad? Here is one explanation worth testing.</p>` },
+  { target: ".mode", reveal: [".mode"], place: "below",
+    text: `<p>Test it with imaginary groups.</p>`,
+    waitFor: { event: "click", target: '.mode button[data-value="whatif"]', prompt: "Click “What if…”." } },
+  { target: [".stage-card", ".chart-card"], setup: () => setWhatIf(-0.3),
+    text: `<p>Most people in the experiment guessed too low. And "the average" they were shown was the ordinary average, which a few huge guesses drag upwards, towards the truth.</p>
+           <p>These imaginary groups guess about 2× too low and see that average. In the chart, the crowd's error shrinks (blue).</p>` },
+  { target: '[data-tour="bias"]', place: "below",
+    text: `<p>Now make first guesses lean <b>too high</b> instead.</p>`,
+    waitFor: { event: "input", target: '[data-tour="bias"] input', until: () => S.bias >= 0.2, prompt: "Drag “First guesses are typically” to too high." } },
+  { target: ".chart-card",
+    text: `<p>Now seeing the average makes the crowd <i>worse</i>: the same upward pull drags it further from the truth.</p>
+           <p>Influence always shrinks diversity. Whether it also improves accuracy depends on where the shared signal sits, not on influence itself.</p>` },
+  { text: `<p>That's Lorenz's influence. Seeing others makes a crowd less diverse and more confident, and can push the truth outside every guess. Whether its answer gets better depends on what people see.</p>
+           <p>Next: does it matter <i>whom</i> people listen to? Try <a href="#/becker">Becker's networks</a>.</p>` },
+];
+
