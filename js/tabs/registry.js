@@ -52,6 +52,7 @@ export const TABS = [
     refs: [
       { cite: "Pescetelli, N. (2026). Collective incentives that promote collective intelligence. Submitted. The continuous model this tab is built on." },
       { cite: "Pescetelli, N., Rutherford, A., Rahwan, I., &amp; Kao, A. B. (2025). Collective incentives improve group accuracy by reducing reliance on shared news sources. <i>Collective Intelligence</i>, 4(3). The question this tab asks.", url: "https://doi.org/10.1177/26339137251372605" },
+      { cite: "Morris, S., &amp; Shin, H. S. (2002). Social value of public information. <i>American Economic Review</i>, 92(5), 1521–1534. The weight on private information that is best for the average.", url: "https://doi.org/10.1257/000282802762024610" },
     ],
   },
   {

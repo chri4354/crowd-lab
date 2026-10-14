@@ -28,11 +28,11 @@ export function mount(el) {
       <div>
         <div class="card stage-card"><svg class="dots" viewBox="0 0 ${W} ${H}" role="img"></svg></div>
         <div class="readouts"></div>
-        <div class="card chart-card">
+        <div class="card chart-card landscape-card">
           <h2>How far off, for each level of trust in the tip?</h2>
           <svg class="landscape" viewBox="0 0 ${CW} ${CH}" role="img"></svg>
         </div>
-        <div class="card chart-card">
+        <div class="card chart-card trace-card">
           <h2>What people learn, round by round</h2>
           <svg class="trace" viewBox="0 0 ${CW} ${CH}" role="img"></svg>
         </div>
@@ -55,27 +55,39 @@ function buildControls() {
   const c = root.querySelector(".controls");
   c.innerHTML = `<h2>The world</h2>`;
   ctl = {};
-  c.appendChild(slider({ label: "People", min: 1, max: N_MAX, value: S.n,
+  c.appendChild(slider({ label: "People", min: 1, max: N_MAX, value: S.n, tour: "n",
     onInput: n => { S.n = n; resize(); draw(); } }));
-  c.appendChild(slider({ label: "Headline is typically off by", min: 2, max: 30, value: S.sH,
+  c.appendChild(slider({ label: "Headline is typically off by", min: 2, max: 30, value: S.sH, tour: "sH",
     format: v => `± ${v}`, hint: "Shared: everyone reads the same one, so everyone gets the same error.",
     onInput: v => { S.sH = v; S.recent = []; S.round = playRound(); draw(); } }));
-  c.appendChild(slider({ label: "Private tip is typically off by", min: 2, max: 30, value: S.sP,
+  c.appendChild(slider({ label: "Private tip is typically off by", min: 2, max: 30, value: S.sP, tour: "sP",
     format: v => `± ${v}`, hint: "Each person gets their own, with its own error.",
     onInput: v => { S.sP = v; S.recent = []; S.round = playRound(); draw(); } }));
-  ctl.t = slider({ label: "Weight on the tip", min: 0, max: 1, step: 0.01, value: 0.5,
+  ctl.t = slider({ label: "Weight on the tip", min: 0, max: 1, step: 0.01, value: 0.5, tour: "t",
     format: v => `${Math.round(v * 100)}%`, hint: "0% = repeat the headline; 100% = go with your own tip.",
-    onInput: v => { stop(); S.t = S.t.map(() => v); S.recent = []; S.round = playRound(); draw(); } });
+    onInput: v => setWeight(v) });
   c.appendChild(ctl.t);
   const row = document.createElement("div"); row.className = "btn-row";
   ctl.play = button("Let them learn", toggle, "primary");
+  ctl.play.dataset.tour = "play";
   row.appendChild(ctl.play);
   row.appendChild(button("One round", () => { stop(); learnRound(); draw(); }));
+  row.lastChild.dataset.tour = "round";
   row.appendChild(button("Forget", forget));
+  row.lastChild.dataset.tour = "forget";
   c.appendChild(row);
   const note = document.createElement("p"); note.className = "note";
   note.innerHTML = `After each round people see how far off the estimate they were paid on was, and nudge their weight on the tip to shrink that error next time. This is the model in Pescetelli (2026, submitted): the continuous version of the <a href="#/incentives">choice tab</a>.`;
   c.appendChild(note);
+}
+
+// everyone puts weight v on their tip
+function setWeight(v) {
+  stop();
+  S.t = S.t.map(() => v);
+  S.recent = [];
+  S.round = playRound();
+  draw();
 }
 
 function forget() {
@@ -289,3 +301,64 @@ function drawTrace() {
   svg.append("text").attr("x", CM.l + 8).attr("y", CM.t + 14).attr("font-size", 15).style("fill", "var(--ink-soft)")
     .text("average weight on the private tip");
 }
+
+// ---------- guided story ----------
+function setPay(v) {
+  S.pay = v;
+  S.recent = [];
+  root.querySelectorAll(".mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === v)));
+  draw();
+}
+// the tab's starting world: 25 people, headline off by ±10, tips by ±20, nothing learned
+function startOver() {
+  stop();
+  Object.assign(S, { n: 25, sH: 10, sP: 20 });
+  buildControls();
+  setPay("me");
+  forget();
+}
+const pm = v => `±${fmt(v, 1)}`;
+let rounds = 0;
+
+export const story = [
+  { setup: startOver,
+    text: `<p>The same dilemma as <a href="#/incentives">Collective incentives</a>, but now people guess a <b>number</b>, and the crowd's answer is the average of their guesses.</p>
+           <p>The headline is typically off by 10, and everyone gets the same error. Each person's tip is typically off by 20, twice as much, but the errors are their own.</p>` },
+  { target: ".stage-card", reveal: [".stage-card"], setup: startOver,
+    text: `<p>Here are 25 guesses of a number whose true value is 100 (the <span style="color:var(--truth)">green line</span>). The dashed line is today's headline, the <span style="color:var(--crowd)">yellow line</span> the crowd's average.</p>
+           <p>Each guess mixes the headline with the person's own tip.</p>` },
+  { target: '[data-tour="round"]', reveal: [".controls", '[data-tour="round"]'], place: "below", setup: () => { rounds = 0; },
+    text: `<p>Play a few rounds. Each is a new number, with a new headline and new tips. Watch where the crowd's average goes.</p>`,
+    waitFor: { event: "click", target: '[data-tour="round"]', until: () => ++rounds >= 3, prompt: "Press One round three times." } },
+  { target: ".readouts", reveal: [".readouts"], setup: () => setWeight(0.5),
+    text: () => `<p>Right now every guess is half headline, half tip. A typical person is off by ${pm(personErr(0.5))}, worse than the headline alone (${pm(S.sH)}).</p>
+                 <p>Yet the crowd's average is off by only ${pm(crowdErr(0.5))}. Unlike votes, an average lets noisy tips cancel each other out.</p>` },
+  { target: '[data-tour="t"]', reveal: ['[data-tour="t"]'], place: "below",
+    text: () => `<p>Suppose you are paid for <b>your own</b> estimate. Your tip is half as reliable as the headline, so the best mix gives it a weight of ${Math.round(bestForPerson() * 100)}%.</p>`,
+    waitFor: { event: "input", target: '[data-tour="t"] input', until: () => Math.abs(meanT() - bestForPerson()) <= 0.03, prompt: () => `Drag “Weight on the tip” to ${Math.round(bestForPerson() * 100)}%.` } },
+  { target: ".readouts",
+    text: () => `<p>Now each person is off by ${pm(personErr(meanT()))}, the best anyone can do alone.</p>
+                 <p>But the crowd is off by ${pm(crowdErr(meanT()))}, barely better than one person: most of every guess is the same headline, and its error does not average away.</p>` },
+  { target: [".landscape-card", '[data-tour="t"]'], reveal: [".landscape-card"],
+    text: `<p>This chart shows how far off one person (dashed red) and the crowd's average (purple) are, for every weight on the tip. The circle is your crowd.</p>`,
+    waitFor: { event: "input", target: '[data-tour="t"] input', until: () => meanT() >= 0.8, prompt: "Drag the weight up to 80% or more, and watch the circle." } },
+  { target: ".landscape-card",
+    text: () => `<p>Best for each person (red ▼): ${Math.round(bestForPerson() * 100)}% on the tip. Best for the crowd (green ▼): ${Math.round(bestForGroup() * 100)}%, where the crowd is off by only ${pm(crowdErr(bestForGroup()))}, while each person is off by ${pm(personErr(bestForGroup()))}.</p>
+                 <p>The crowd gains what its members lose.</p>` },
+  { target: '[data-tour="play"]', reveal: [".trace-card", '[data-tour="play"]', '[data-tour="forget"]'], place: "below",
+    setup: () => { setPay("me"); setWeight(0.5); S.trace = []; draw(); },
+    text: `<p>Real people don't know this chart. After each round they see how far off the estimate they were paid on was, and nudge their weight on the tip to shrink that error.</p>
+           <p>Pay them for <b>their own</b> estimate, and let them learn.</p>`,
+    waitFor: { event: "click", target: '[data-tour="play"]', prompt: "Press Let them learn." } },
+  { target: ".trace-card", setup: () => { if (!raf) start(); },
+    text: () => `<p>The weight settles near ${Math.round(bestForPerson() * 100)}%, the best mix for each of them. The crowd stays stuck near the headline's error.</p>` },
+  { target: ".mode", reveal: [".mode", '[data-tour="n"]', '[data-tour="sH"]', '[data-tour="sP"]'], place: "below",
+    text: `<p>Same people, same learning rule. Now change <b>how people are paid</b>.</p>`,
+    waitFor: { event: "click", target: '.mode button[data-value="us"]', prompt: "Click “Pay everyone for the crowd's estimate”." } },
+  { target: [".trace-card", ".readouts"], setup: () => { if (!raf) start(); },
+    text: `<p>The weight climbs towards the green line. Paid for the crowd's error, people learn to lean on their own tips, and the crowd's typical miss falls towards its best.</p>
+           <p>Each person's own estimate gets worse. Nobody needs to know how big the crowd is, or that the headline is shared.</p>` },
+  { text: `<p>That's the estimates version. Here the arithmetic is exact: the best weight for a person depends only on how reliable the two sources are, while the best weight for the crowd grows with its size (Morris &amp; Shin, 2002).</p>
+           <p>Paying everyone for the crowd's error teaches people to find it on their own. Next: what happens when people can see each other's guesses? Try <a href="#/lorenz">Lorenz's influence</a>.</p>` },
+];
+

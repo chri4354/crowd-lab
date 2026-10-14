@@ -86,7 +86,7 @@ export function startStory(root, steps, { onEnd } = {}) {
       <div class="story-top"><span class="story-count">${i + 1} / ${steps.length}</span>
         <button type="button" class="story-x" aria-label="Close the story">×</button></div>
       <div class="story-text">${text}</div>
-      ${s.waitFor && !satisfied ? `<p class="story-try">${s.waitFor.prompt || "Try it, then press Next."}</p>` : ""}
+      ${s.waitFor && !satisfied ? `<p class="story-try">${(typeof s.waitFor.prompt === "function" ? s.waitFor.prompt() : s.waitFor.prompt) || "Try it, then press Next."}</p>` : ""}
       <div class="story-nav">
         ${i > 0 ? `<button type="button" class="story-back">Back</button>` : "<span></span>"}
         <button type="button" class="story-next primary"${satisfied ? "" : " disabled"}>${last ? "Done" : "Next"}</button>
