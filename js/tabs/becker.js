@@ -129,7 +129,7 @@ function buildControls() {
   c.innerHTML = "";
   if (S.mode === "data") {
     c.innerHTML = `<h2>The experiment</h2>`;
-    const nc = document.createElement("div"); nc.className = "control";
+    const nc = document.createElement("div"); nc.className = "control"; nc.dataset.tour = "net";
     nc.innerHTML = `<label><span>Each person sees the average of…</span></label>`;
     nc.appendChild(seg(NETWORKS.filter(x => !x.simOnly).map(({ value, short }) => ({ value, label: short })), S.net,
       v => { S.net = v; S.gi = 0; S.ti = 0; S.shown = 1; buildControls(); draw(); }));
@@ -137,29 +137,35 @@ function buildControls() {
     const groups = dataGroups(S.net);
     c.appendChild(select("Group", groups.map((g, i) => `Group ${i + 1} of ${groups.length}`), S.gi,
       v => { S.gi = v; S.ti = 0; S.shown = 1; buildControls(); draw(); }));
+    c.lastChild.dataset.tour = "group";
     c.appendChild(select("Question", groups[S.gi].tasks.map(t =>
       t.kind === "count" ? `A count (true answer ${fmt(t.truth)})` : `A percentage (true answer ${t.truth}%)`), S.ti,
       v => { S.ti = v; S.shown = 1; draw(); }));
+    c.lastChild.dataset.tour = "question";
     const row = document.createElement("div"); row.className = "btn-row";
     row.appendChild(button("Next round", next, "primary"));
+    row.lastChild.dataset.tour = "next";
     row.appendChild(button("Start again", () => { S.shown = 1; draw(); }));
+    row.lastChild.dataset.tour = "again";
     c.appendChild(row);
   } else {
     c.innerHTML = `<h2>An imaginary group</h2>`;
     const re = () => { newGroup(); draw(); };
     c.appendChild(select("Each person sees the average of…", NETWORKS.map(x => x.label),
       NETWORKS.findIndex(x => x.value === S.simNet), v => { S.simNet = NETWORKS[v].value; re(); }));
-    c.appendChild(slider({ label: "People", min: 10, max: 100, value: S.n, onInput: v => { S.n = v; re(); } }));
-    c.appendChild(slider({ label: "How much people keep their own guess", min: 0.1, max: 0.9, step: 0.05, value: S.keep,
+    c.lastChild.dataset.tour = "simnet";
+    c.appendChild(slider({ label: "People", min: 10, max: 100, value: S.n, tour: "n", onInput: v => { S.n = v; re(); } }));
+    c.appendChild(slider({ label: "How much people keep their own guess", min: 0.1, max: 0.9, step: 0.05, value: S.keep, tour: "keep",
       format: v => `${Math.round(v * 100)}%`, hint: "On average. The rest moves towards what they see.", onInput: v => { S.keep = v; re(); } }));
-    c.appendChild(slider({ label: "Accurate people stick to their guess", min: 0, max: 1, step: 0.05, value: S.stick,
+    c.appendChild(slider({ label: "Accurate people stick to their guess", min: 0, max: 1, step: 0.05, value: S.stick, tour: "stick",
       format: v => (v === 0 ? "no" : v < 0.35 ? "a little" : v < 0.7 ? "yes" : "strongly"),
       hint: "People differ in how much they revise. At \"no\" that is pure chance; Becker et al. found that people nearer the truth revised a little less.", onInput: v => { S.stick = v; re(); } }));
-    c.appendChild(slider({ label: "First guesses lean", min: -1, max: 1, step: 0.05, value: S.bias,
+    c.appendChild(slider({ label: "First guesses lean", min: -1, max: 1, step: 0.05, value: S.bias, tour: "bias",
       format: v => (Math.abs(v) < 0.03 ? "neither way" : `${fmt(Math.abs(v), 2)} spreads too ${v > 0 ? "high" : "low"}`),
       onInput: v => { S.bias = v; re(); } }));
     const row = document.createElement("div"); row.className = "btn-row";
     row.appendChild(button("Ask a new group", re, "primary"));
+    row.lastChild.dataset.tour = "new";
     c.appendChild(row);
   }
   const note = document.createElement("p"); note.className = "note";
@@ -377,3 +383,77 @@ function axes(g, x, y, width, xLabel, yFormat) {
   g.append("g").attr("class", "axis").attr("transform", `translate(${CM.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(yFormat));
   g.append("text").attr("x", width - CM.r).attr("y", CH - 4).attr("text-anchor", "end").attr("font-size", 13).style("fill", "var(--ink-soft)").text(xLabel);
 }
+
+// ---------- guided story ----------
+// Show one real trial (network, group index, question index) with the first `shown` estimates.
+function setData(net, gi, ti, shown) {
+  Object.assign(S, { mode: "data", net, gi, ti });
+  root.querySelectorAll(".mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === "data")));
+  buildControls();
+  S.shown = shown;
+  draw();
+}
+function setWhatIf(patch) {
+  Object.assign(S, { mode: "whatif", n: 40, simNet: "decentralized", keep: 0.5, stick: 0.3, bias: 0.6 }, patch);
+  root.querySelectorAll(".mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === "whatif")));
+  newGroup();
+  buildControls();
+  draw();
+}
+// the real trials the story follows (indices into each network's groups and their questions)
+const FOUR = ["decentralized", 10, 0];   // question 5a, a percentage: the average's error halves
+const GOOD_HUB = ["centralized", 7, 2];  // question 7a: the hub was nearer the truth
+const BAD_HUB = ["centralized", 8, 3];   // question 8a: the hub guessed far too high
+const off = k => { const g = current(); return `${fmt(groupErr(g.z[k]) * g.sd, 1)} points`; };
+const sides = () => { const v = valid(current().z[0]); return `${v.filter(x => x > 0).length} of ${v.length}`; };
+const typical = k => { const g = current(); return `${fmt(mean(valid(g.z[k]).map(Math.abs)) * g.sd, 1)} points`; };
+const spreadPts = k => { const g = current(); return `${fmt(sdOf(g.z[k]) * g.sd, 1)} points`; };
+
+export const story = [
+  { setup: () => setData(...FOUR, 1),
+    text: `<p>In an online experiment published in 2017, Joshua Becker, Devon Brackbill and Damon Centola asked groups of about 40 people to estimate things from pictures: the calories in a plate of food, the number of sweets in a jar, a percentage of the people in a photo. Close answers were paid.</p>
+           <p>Each person guessed, then revised twice after seeing the average guess of the people they were connected to. What changed between groups was <b>who was connected to whom</b>.</p>` },
+  { target: ".stage-card", reveal: [".stage-card"], setup: () => setData(...FOUR, 1),
+    text: () => `<p>On the left is one group's network: each circle is a person, tied to four random others. On the right are their first guesses at a percentage whose true value was ${current().truth}% (green line). The <span style="color:var(--crowd)">yellow line</span> is the group's average.</p>
+                 <p>Colours: blue guessed too low, orange too high, grey about right.</p>` },
+  { target: ".readouts", reveal: [".readouts"],
+    text: () => `<p>The group's average is off by ${off(0)}; a typical person by ${typical(0)}. Errors cancel out in an average only when they point both ways, and here ${sides()} guessed too high.</p>` },
+  { target: '[data-tour="next"]', reveal: [".controls", '[data-tour="next"]'], place: "below", setup: () => setData(...FOUR, 1),
+    text: `<p>After each guess, everyone saw the average of their four neighbours, then guessed again. <b>Press Next round</b> to see both revisions.</p>`,
+    waitFor: { event: "click", target: '[data-tour="next"]', until: () => S.shown === ROUNDS, prompt: "Press Next round twice." } },
+  { target: ".stage-card", setup: () => setData(...FOUR, ROUNDS),
+    text: () => `<p>As in <a href="#/lorenz">Lorenz's groups</a>, guesses close in on each other: the spread falls from ${spreadPts(0)} to ${spreadPts(2)}.</p>
+                 <p>But this time the average moved too, <b>towards</b> the truth: from ${off(0)} off to ${off(2)}.</p>` },
+  { target: '[data-tour="net"]', reveal: ['[data-tour="net"]'], place: "below",
+    text: `<p>Now a different wiring. In some groups, everyone saw only one person, the <b>hub</b>, and the hub saw everyone.</p>`,
+    waitFor: { event: "click", target: '[data-tour="net"] button[data-value="centralized"]', prompt: "Click “A hub”." } },
+  { target: ".stage-card", setup: () => setData(...GOOD_HUB, ROUNDS),
+    text: () => `<p>Here the hub (★) guessed nearer the truth than the group's average did. Everyone moved towards the hub, and the group's average went from ${off(0)} off to ${off(2)}.</p>` },
+  { target: ".stage-card", setup: () => setData(...BAD_HUB, ROUNDS),
+    text: () => `<p>In another group the hub guessed far too high. Everyone followed, and the group's average got worse: from ${off(0)} off to ${off(2)}.</p>
+                 <p>With one hub, the group becomes the hub, for better or worse.</p>` },
+  { target: ".chart-card", reveal: [".chart-card", '[data-tour="group"]', '[data-tour="question"]', '[data-tour="again"]'],
+    text: `<p>Every group and question in the experiment. With four random neighbours, the group's average got closer to the truth (left, blue line); it improved in 41 of 59 cases. With nobody to listen to, it barely moved.</p>
+           <p>With a hub (right), it depended on the hub: each dot is one question, and the groups whose hub was nearer the truth (left half) mostly got better.</p>` },
+  { target: ".mode", reveal: [".mode"], place: "below",
+    text: `<p>Why would listening to neighbours make a group's average better? Test it with imaginary groups.</p>`,
+    waitFor: { event: "click", target: '.mode button[data-value="whatif"]', prompt: "Click “What if…”." } },
+  { target: ".chart-card", setup: () => setWhatIf({ stick: 0 }),
+    text: `<p>In these imaginary groups everyone revises the same way: keep part of your guess, move the rest towards the average you see. How much each person keeps is pure chance.</p>
+           <p>The bars show how often the group's average got better: about half the time with neighbours, a coin toss. With nobody to listen to, nothing changes.</p>` },
+  { target: '[data-tour="stick"]', reveal: ['[data-tour="stick"]'], place: "below",
+    text: `<p>Becker et al. found that people nearer the truth revised a little less. Let <b>accurate people stick to their guess</b>.</p>`,
+    waitFor: { event: "input", target: '[data-tour="stick"] input', until: () => S.stick >= 0.35, prompt: "Drag it to “yes” or more." } },
+  { target: ".chart-card",
+    text: `<p>Now groups with neighbours, or with everyone's average, improve almost every time. The people who move least are the ones nearer the truth, so the average drifts their way.</p>
+           <p>With one hub, it is still a coin toss: the hub decides.</p>` },
+  { target: '[data-tour="n"]', reveal: ['[data-tour="n"]'], place: "below", setup: () => setWhatIf({ stick: 0.3 }),
+    text: `<p>I've set it back to "a little", closer to what Becker et al. measured. Lorenz's groups had 12 people. <b>Make the group that small.</b></p>`,
+    waitFor: { event: "input", target: '[data-tour="n"] input', until: () => S.n <= 15, prompt: "Drag People down to 15 or fewer." } },
+  { target: ".chart-card",
+    text: `<p>Small groups improve less reliably. The effect is real, but in a group of 12 it is easy to miss, which is how Becker et al. explain why Lorenz's groups did not always show it.</p>` },
+  { reveal: ['[data-tour="simnet"]', '[data-tour="keep"]', '[data-tour="bias"]', '[data-tour="new"]'],
+    text: `<p>That's Becker's networks. Influence shrinks diversity in every network, as Lorenz found. But when people listen to a few others, and the ones nearer the truth hold firmer, the group's average improves. Put one voice at the centre, and the group becomes that voice.</p>
+           <p>Who listens to whom matters. That's the last story: go back to the beginning with <a href="#/galton">Galton's ox</a>.</p>` },
+];
+
