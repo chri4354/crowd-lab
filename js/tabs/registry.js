@@ -50,7 +50,8 @@ export const TABS = [
     subtitle: "The same, with numbers not choices",
     load: () => import("./estimates.js"),
     refs: [
-      { cite: "Pescetelli, N., Rutherford, A., Rahwan, I., &amp; Kao, A. B. (2025). Collective incentives improve group accuracy by reducing reliance on shared news sources. <i>Collective Intelligence</i>, 4(3). The question this tab asks; the continuous model itself is a toy, not from the paper.", url: "https://doi.org/10.1177/26339137251372605" },
+      { cite: "Pescetelli, N. (2026). Collective incentives that promote collective intelligence. Submitted. The continuous model this tab is built on." },
+      { cite: "Pescetelli, N., Rutherford, A., Rahwan, I., &amp; Kao, A. B. (2025). Collective incentives improve group accuracy by reducing reliance on shared news sources. <i>Collective Intelligence</i>, 4(3). The question this tab asks.", url: "https://doi.org/10.1177/26339137251372605" },
     ],
   },
   {

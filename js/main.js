@@ -44,7 +44,7 @@ async function route() {
   if (tab.refs?.length) stage.insertAdjacentHTML("beforeend", `
     <footer class="refs">
       <h2>Sources</h2>
-      <ol>${tab.refs.map(r => `<li>${r.cite} <a href="${r.url}" target="_blank" rel="noopener">${refLabel(r.url)}</a></li>`).join("")}</ol>
+      <ol>${tab.refs.map(r => `<li>${r.cite}${r.url ? ` <a href="${r.url}" target="_blank" rel="noopener">${refLabel(r.url)}</a>` : ""}</li>`).join("")}</ol>
     </footer>`);
   stage.focus({ preventScroll: true });
 }

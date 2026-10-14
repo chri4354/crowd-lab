@@ -74,7 +74,7 @@ function buildControls() {
   row.appendChild(button("Forget", forget));
   c.appendChild(row);
   const note = document.createElement("p"); note.className = "note";
-  note.innerHTML = `After each round people see how far off the estimate they were paid on was, and nudge their weight on the tip to shrink that error next time. This is a toy, not a model from a paper: the continuous version of the <a href="#/incentives">choice tab</a>.`;
+  note.innerHTML = `After each round people see how far off the estimate they were paid on was, and nudge their weight on the tip to shrink that error next time. This is the model in Pescetelli (2026, submitted): the continuous version of the <a href="#/incentives">choice tab</a>.`;
   c.appendChild(note);
 }
 
