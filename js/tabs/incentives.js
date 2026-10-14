@@ -26,11 +26,11 @@ export function mount(el) {
       <div>
         <div class="card stage-card"><svg class="crowd" viewBox="0 0 ${W} ${H}" role="img"></svg></div>
         <div class="readouts"></div>
-        <div class="card chart-card">
+        <div class="card chart-card landscape-card">
           <h2>How often is the group right, for each level of trust in the tip?</h2>
           <svg class="landscape" viewBox="0 0 ${CW} ${CH}" role="img"></svg>
         </div>
-        <div class="card chart-card">
+        <div class="card chart-card trace-card">
           <h2>What people learn, round by round</h2>
           <svg class="trace" viewBox="0 0 ${CW} ${CH}" role="img"></svg>
         </div>
@@ -57,25 +57,36 @@ function buildControls() {
   const c = root.querySelector(".controls");
   c.innerHTML = `<h2>The world</h2>`;
   ctl = {};
-  c.appendChild(slider({ label: "People", min: 0, max: (N_MAX - 1) / 2, value: S.m,
+  c.appendChild(slider({ label: "People", min: 0, max: (N_MAX - 1) / 2, value: S.m, tour: "m",
     format: m => 2 * m + 1, hint: "Always odd, so there are no ties.", onInput: m => { S.m = m; resize(); draw(); } }));
-  c.appendChild(slider({ label: "Headline is right", min: 0.5, max: 1, step: 0.01, value: S.rH,
+  c.appendChild(slider({ label: "Headline is right", min: 0.5, max: 1, step: 0.01, value: S.rH, tour: "rH",
     format: v => `${Math.round(v * 100)}%`, hint: "Shared: everyone reads the same one.", onInput: v => { S.rH = v; S.recent = []; draw(); } }));
-  c.appendChild(slider({ label: "Private tip is right", min: 0.5, max: 1, step: 0.01, value: S.rL,
+  c.appendChild(slider({ label: "Private tip is right", min: 0.5, max: 1, step: 0.01, value: S.rL, tour: "rL",
     format: v => `${Math.round(v * 100)}%`, hint: "Each person gets their own, independently.", onInput: v => { S.rL = v; S.recent = []; draw(); } }));
-  ctl.p = slider({ label: "When they disagree, go with the tip", min: 0, max: 1, step: 0.01, value: 0.5,
+  ctl.p = slider({ label: "When they disagree, go with the tip", min: 0, max: 1, step: 0.01, value: 0.5, tour: "p",
     format: v => `${Math.round(v * 100)}%`, hint: "Set it by hand, or let people learn it.",
-    onInput: v => { stop(); S.people = S.people.map(() => newPerson(v, 0.5)); S.recent = []; draw(); } });
+    onInput: v => setTrust(v) });
   c.appendChild(ctl.p);
   const row = document.createElement("div"); row.className = "btn-row";
   ctl.play = button("Let them learn", toggle, "primary");
+  ctl.play.dataset.tour = "play";
   row.appendChild(ctl.play);
   row.appendChild(button("One round", () => { stop(); learnRound(); draw(); }));
+  row.lastChild.dataset.tour = "round";
   row.appendChild(button("Forget", forget));
+  row.lastChild.dataset.tour = "forget";
   c.appendChild(row);
   const note = document.createElement("p"); note.className = "note";
   note.innerHTML = `After each round, people strengthen whichever source pointed to the answer they were paid on, if it turned out right, and weaken it if not. Nobody knows how big the group is, or that the headline is shared.`;
   c.appendChild(note);
+}
+
+// everyone goes with the tip with probability v when the sources disagree
+function setTrust(v) {
+  stop();
+  S.people = S.people.map(() => newPerson(v, 0.5));
+  S.recent = [];
+  draw();
 }
 
 function forget() {
@@ -282,3 +293,65 @@ function drawTrace() {
   svg.append("text").attr("x", CM.l + 8).attr("y", CM.t + 14).attr("font-size", 15).style("fill", "var(--ink-soft)")
     .text("average trust in the private tip");
 }
+
+// ---------- guided story ----------
+function setPay(v) {
+  S.pay = v;
+  S.recent = [];
+  root.querySelectorAll(".mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === v)));
+  draw();
+}
+// the tab's starting world: 25 people, headline right 75%, tip right 60%, nothing learned
+function startOver() {
+  stop();
+  Object.assign(S, { m: 12, rH: 0.75, rL: 0.6 });
+  buildControls();
+  setPay("me");
+  forget();
+}
+const pc = v => `${(v * 100).toFixed(1)}%`;
+let rounds = 0;
+
+export const story = [
+  { setup: startOver,
+    text: `<p>Everyone reads the same headline. It points to the right answer 75% of the time.</p>
+           <p>Each person also has a <b>private tip</b> of their own: less reliable, right 60% of the time, but independent of everyone else's.</p>
+           <p>When the two disagree, which should you trust? It depends on who is paying.</p>` },
+  { target: ".stage-card", reveal: [".stage-card"], setup: startOver,
+    text: `<p>Here are 25 people facing a yes-or-no question. The top line says whether today's headline points the right way.</p>
+           <p>Each person votes with the headline or with their tip (● means they went with their tip against the headline). The group decides by majority.</p>` },
+  { target: '[data-tour="round"]', reveal: [".controls", '[data-tour="round"]'], place: "below", setup: () => { rounds = 0; },
+    text: `<p>Play a few rounds. Each one is a new question, with a new headline and new tips.</p>`,
+    waitFor: { event: "click", target: '[data-tour="round"]', until: () => ++rounds >= 3, prompt: "Press One round three times." } },
+  { target: ".readouts", reveal: [".readouts"], setup: () => setTrust(0.5),
+    text: () => `<p>Right now people go with their tip half the time when the two disagree.</p>
+                 <p>A typical person is right ${pc(personAcc(meanP()))} of the time, worse than just following the headline (75%). The group is right ${pc(groupAcc(meanP()))}: hardly better than the headline.</p>` },
+  { target: '[data-tour="p"]', reveal: ['[data-tour="p"]'], place: "below",
+    text: `<p>Suppose you are paid for <b>your own</b> answer. The headline is more reliable than your tip, so the smart move is to follow the headline every time.</p>`,
+    waitFor: { event: "input", target: '[data-tour="p"] input', until: () => meanP() <= 0.05, prompt: "Drag “go with the tip” down to 0%." } },
+  { target: ".readouts",
+    text: `<p>Now everyone is right 75% of the time, the best anyone can do alone.</p>
+           <p>But the group is right exactly 75% too. Everyone copies the same headline, so when it is wrong, they are all wrong together.</p>` },
+  { target: [".landscape-card", '[data-tour="p"]'], reveal: [".landscape-card"],
+    text: `<p>This curve shows how often the group is right, for every level of trust in the tip. The circle is where your group is now.</p>`,
+    waitFor: { event: "input", target: '[data-tour="p"] input', until: () => meanP() >= 0.8, prompt: "Drag “go with the tip” up to 80% or more, and watch the circle." } },
+  { target: ".landscape-card",
+    text: () => `<p>Best for each person (red ▲): never trust the tip. Best for the group (green ▲): trust it ${Math.round(bestForGroup() * 100)}% of the time, which makes the group right ${pc(groupAcc(bestForGroup()))}.</p>
+                 <p>Independent tips cancel out each other's mistakes in the majority, as in <a href="#/condorcet">Condorcet's jury</a>. A shared headline cannot.</p>` },
+  { target: '[data-tour="play"]', reveal: [".trace-card", '[data-tour="play"]', '[data-tour="forget"]'], place: "below",
+    setup: () => { setPay("me"); setTrust(0.5); S.trace = []; draw(); },
+    text: `<p>Real people don't know this curve. They learn from what they are paid on: after each round, they trust a little more whichever source pointed to the answer they were paid for, if it was right.</p>
+           <p>Pay them for <b>their own</b> answer, and let them learn.</p>`,
+    waitFor: { event: "click", target: '[data-tour="play"]', prompt: "Press Let them learn." } },
+  { target: ".trace-card", setup: () => { if (!raf) start(); },
+    text: `<p>Trust in the tip sinks to about 20%. People learn to lean on the headline, the best strategy for each of them, and the group ends up no better than the headline.</p>` },
+  { target: ".mode", reveal: [".mode", '[data-tour="m"]', '[data-tour="rH"]', '[data-tour="rL"]'], place: "below",
+    text: `<p>Same people, same learning rule. Now change <b>who gets paid</b>.</p>`,
+    waitFor: { event: "click", target: '.mode button[data-value="us"]', prompt: "Click “Pay everyone for the group's answer”." } },
+  { target: [".trace-card", ".readouts"], setup: () => { if (!raf) start(); },
+    text: `<p>Trust in the tip climbs towards the green line. Paid for the group's answer, people learn to keep their own information, and the group is right about 86% of the time.</p>
+           <p>Notice the cost: a typical person is now right less often than before. The crowd gains what its members lose.</p>` },
+  { text: `<p>That's collective incentives. Pay people for their own accuracy and they all lean on the shared source, so the group is no wiser than the headline. Pay them for the group's accuracy and they learn to keep their independent information.</p>
+           <p>The model follows Kao et al. (2014); an experiment with real news is Pescetelli et al. (2025). Next: the same idea with numbers instead of choices, in <a href="#/estimates">Incentives, with estimates</a>.</p>` },
+];
+

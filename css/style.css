@@ -139,7 +139,17 @@ svg .grid line { stroke: var(--line); stroke-dasharray: 2 4; }
 .story-try { font-family: var(--hand); font-size: 1.2rem; color: var(--wrong); margin: .2rem 0 .5rem; }
 .story-nav { display: flex; justify-content: space-between; gap: .5rem; }
 .story-nav button[disabled] { opacity: .45; cursor: not-allowed; transform: none; }
-.story-btn { font-size: .85rem; padding: .3rem .8rem; margin-top: .2rem; }
+.story-btn { font-size: .85rem; padding: .3rem .8rem; }
+/* the replay button sits top right, level with the tab's title */
+.tab-head { position: relative; }
+.tab-head .story-btn { position: absolute; top: .5rem; right: 0; }
+.tab-head:has(.story-btn) h1 { padding-right: 12rem; }
+.tab-head:has(.story-btn) .question { max-width: min(60ch, calc(100% - 12rem)); }
+@media (max-width: 760px) {
+  .tab-head .story-btn { position: static; margin: 0 0 .8rem; }
+  .tab-head:has(.story-btn) h1 { padding-right: 0; }
+  .tab-head:has(.story-btn) .question { max-width: none; }
+}
 .guided-toggle { display: flex; align-items: center; gap: .4rem; margin-bottom: .5rem; font-weight: 700; color: var(--ink); cursor: pointer; }
 .guided-toggle input { accent-color: var(--accent); width: 1rem; height: 1rem; }
 
