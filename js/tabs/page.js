@@ -251,5 +251,5 @@ export const story = [
            <p>Moving the truth changes how wrong everyone is, but the crowd always beats its average member by exactly the diversity.</p>` },
   { reveal: ['[data-tour="addrm"]'],
     text: `<p>That's Page's difference. A crowd is never worse than its average member, and it beats them by exactly how much they disagree.</p>
-           <p>So disagreement is not noise to remove: for the same individual errors, the more people disagree, the smaller the crowd's error. Next: can incentives stop everyone leaning on the same source? Try <a href="#/incentives">Collective incentives</a>.</p>` },
+           <p>So disagreement is not noise to remove: for the same individual errors, the more people disagree, the smaller the crowd's error. Next: can incentives stop everyone leaning on the same source? Try <a href="#/incentives">Group rewards I</a>.</p>` },
 ];

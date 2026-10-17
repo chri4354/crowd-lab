@@ -18,7 +18,7 @@ export function mount(el) {
   S = { pay: "me", m: 12, rH: 0.75, rL: 0.6, people: [], round: null, trace: [], recent: [] };
   el.innerHTML = `
     <header class="tab-head">
-      <h1>Collective incentives</h1>
+      <h1>Group rewards I</h1>
       <p class="question">Everyone sees the same headline. Each person also gets a private tip. When the two disagree, which should they trust — and does it depend on who gets paid?</p>
     </header>
     <div class="mode"></div>
@@ -351,7 +351,7 @@ export const story = [
   { target: [".trace-card", ".readouts"], setup: () => { if (!raf) start(); },
     text: `<p>Trust in the tip climbs towards the green line. Paid for the group's answer, people learn to keep their own information, and the group is right about 86% of the time.</p>
            <p>Notice the cost: a typical person is now right less often than before. The crowd gains what its members lose.</p>` },
-  { text: `<p>That's collective incentives. Pay people for their own accuracy and they all lean on the shared source, so the group is no wiser than the headline. Pay them for the group's accuracy and they learn to keep their independent information.</p>
-           <p>The model follows Kao et al. (2014); an experiment with real news is Pescetelli et al. (2025). Next: the same idea with numbers instead of choices, in <a href="#/estimates">Incentives, with estimates</a>.</p>` },
+  { text: `<p>That's group rewards. Pay people for their own accuracy and they all lean on the shared source, so the group is no wiser than the headline. Pay them for the group's accuracy and they learn to keep their independent information.</p>
+           <p>The model follows Kao et al. (2014); an experiment with real news is Pescetelli et al. (2025). Next: the same idea with numbers instead of choices, in <a href="#/estimates">Group rewards II</a>.</p>` },
 ];
 

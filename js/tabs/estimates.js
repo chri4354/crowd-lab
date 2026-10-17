@@ -20,8 +20,8 @@ export function mount(el) {
   S = { pay: "me", n: 25, sH: 10, sP: 20, t: [], round: null, trace: [], recent: [] };
   el.innerHTML = `
     <header class="tab-head">
-      <h1>Collective incentives, with estimates</h1>
-      <p class="question">The same question as <a href="#/incentives">Collective incentives</a>, but people now guess a number and the crowd takes the average. How much should each guess lean on a private tip rather than the shared headline?</p>
+      <h1>Group rewards II</h1>
+      <p class="question">The same question as <a href="#/incentives">Group rewards I</a>, but people now guess a number and the crowd takes the average. How much should each guess lean on a private tip rather than the shared headline?</p>
     </header>
     <div class="mode"></div>
     <div class="layout" style="margin-top:1rem">
@@ -322,7 +322,7 @@ let rounds = 0;
 
 export const story = [
   { setup: startOver,
-    text: `<p>The same dilemma as <a href="#/incentives">Collective incentives</a>, but now people guess a <b>number</b>, and the crowd's answer is the average of their guesses.</p>
+    text: `<p>The same dilemma as <a href="#/incentives">Group rewards I</a>, but now people guess a <b>number</b>, and the crowd's answer is the average of their guesses.</p>
            <p>The headline is typically off by 10, and everyone gets the same error. Each person's tip is typically off by 20, twice as much, but the errors are their own.</p>` },
   { target: ".stage-card", reveal: [".stage-card"], setup: startOver,
     text: `<p>Here are 25 guesses of a number whose true value is 100 (the <span style="color:var(--truth)">green line</span>). The dashed line is today's headline, the <span style="color:var(--crowd)">yellow line</span> the crowd's average.</p>

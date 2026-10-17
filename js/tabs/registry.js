@@ -36,7 +36,7 @@ export const TABS = [
   },
   {
     id: "incentives",
-    title: "Collective incentives",
+    title: "Group rewards I",
     subtitle: "Should you reward correct people or groups?",
     load: () => import("./incentives.js"),
     refs: [
@@ -46,7 +46,7 @@ export const TABS = [
   },
   {
     id: "estimates",
-    title: "Incentives, with estimates",
+    title: "Group rewards II",
     subtitle: "The same, with numbers not choices",
     load: () => import("./estimates.js"),
     refs: [
