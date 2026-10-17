@@ -74,4 +74,15 @@ export const TABS = [
       { cite: "Golub, B., &amp; Jackson, M. O. (2010). Naïve learning in social networks and the wisdom of crowds. <i>American Economic Journal: Microeconomics</i>, 2(1), 112–149. Why the average ends up weighted by who is listened to.", url: "https://doi.org/10.1257/mic.2.1.112" },
     ],
   },
+  {
+    id: "cascades",
+    title: "Information cascades",
+    subtitle: "Following the crowd into a restaurant",
+    load: () => import("./cascades.js"),
+    refs: [
+      { cite: "Bikhchandani, S., Hirshleifer, D., &amp; Welch, I. (1992). A theory of fads, fashion, custom, and cultural change as informational cascades. <i>Journal of Political Economy</i>, 100(5), 992–1026. The model this tab is built on.", url: "https://doi.org/10.1086/261849" },
+      { cite: "Banerjee, A. V. (1992). A simple model of herd behavior. <i>Quarterly Journal of Economics</i>, 107(3), 797–817. The two restaurants, and the same result, found independently.", url: "https://doi.org/10.2307/2118364" },
+      { cite: "Anderson, L. R., &amp; Holt, C. A. (1997). Information cascades in the laboratory. <i>American Economic Review</i>, 87(5), 847–862. The game, played with students.", url: "https://ideas.repec.org/a/aea/aecrev/v87y1997i5p847-62.html" },
+    ],
+  },
 ];

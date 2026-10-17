@@ -9,6 +9,7 @@ Small interactive explorables on the wisdom — and madness — of crowds, for t
 - **Group rewards II** — the same question with numbers instead of choices: the crowd averages, and people learn their weight on the tip by the delta rule. The crowd's error falls to its optimum while each person's rises.
 - **Lorenz's influence** — replays Lorenz et al.'s Zurich experiment (groups of 12, five guesses, seeing nothing, the average or every guess) on a log scale, then "what if" simulations. Seeing others shrinks the spread, pushes the truth to the edge of the guesses and raises confidence.
 - **Becker's networks** — replays Becker et al.'s experiment (groups of 40 seeing the average of four random neighbours, of one hub, or of nobody), with the real networks, then "what if" simulations. With neighbours and accurate people revising less, the group's average improves; with a hub, it follows the hub.
+- **Information cascades** — Banerjee's two restaurants on Bikhchandani, Hirshleifer & Welch's model: diners arrive one by one with a friend's tip, seeing who sits where but not the tips. Once one room leads by two, everyone follows the crowd, and the evening ends in the worse restaurant far more often than pooling the tips would. Watch the street, run 1,000 evenings, or take your own turn.
 
 Live at <https://crowdlab.hellopsi.co.uk>. Everything runs in the browser. No build step, no server.
 
@@ -46,6 +47,9 @@ Shared helpers (sliders, buttons, the little person figure, statistics) are in `
 - Lorenz, J., Rauhut, H., Schweitzer, F., & Helbing, D. (2011). How social influence can undermine the wisdom of crowd effect. *PNAS*, 108(22), 9020–9025. doi:10.1073/pnas.1008636108 — Dataset S1.
 - Becker, J., Brackbill, D., & Centola, D. (2017). Network dynamics of social influence in the wisdom of crowds. *PNAS*, 114(26), E5070–E5076. doi:10.1073/pnas.1615978114 — Dataset S1.
 - Golub, B., & Jackson, M. O. (2010). Naïve learning in social networks and the wisdom of crowds. *American Economic Journal: Microeconomics*, 2(1), 112–149. doi:10.1257/mic.2.1.112
+- Bikhchandani, S., Hirshleifer, D., & Welch, I. (1992). A theory of fads, fashion, custom, and cultural change as informational cascades. *Journal of Political Economy*, 100(5), 992–1026. doi:10.1086/261849 — the model behind the cascades tab.
+- Banerjee, A. V. (1992). A simple model of herd behavior. *Quarterly Journal of Economics*, 107(3), 797–817. doi:10.2307/2118364
+- Anderson, L. R., & Holt, C. A. (1997). Information cascades in the laboratory. *American Economic Review*, 87(5), 847–862. — the game, played with students.
 - Condorcet, M. de (1785). *Essai sur l'application de l'analyse à la probabilité des décisions rendues à la pluralité des voix*. <https://archive.org/details/essaisurlapplica00cond>
 - Grofman, B., Owen, G., & Feld, S. L. (1983). Thirteen theorems in search of the truth. *Theory and Decision*, 15(3), 261–278. doi:10.1007/BF00125672
 - Ladha, K. K. (1992). The Condorcet jury theorem, free speech, and correlated votes. *American Journal of Political Science*, 36(3), 617–634. doi:10.2307/2111584
