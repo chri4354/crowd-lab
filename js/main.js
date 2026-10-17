@@ -26,6 +26,11 @@ function home() {
     </div>`;
 }
 
+// the same small note at the foot of every page
+const siteFoot = () => stage.insertAdjacentHTML("beforeend", `
+  <p class="site-foot">Crowd Lab is open source, and contributions are welcome:
+    <a href="https://github.com/chri4354/crowd-lab" target="_blank" rel="noopener">github.com/chri4354/crowd-lab</a></p>`);
+
 // "https://doi.org/10.x/y" -> "doi:10.x/y"; anything else loses its scheme
 const refLabel = url => url.startsWith("https://doi.org/") ? `doi:${url.slice(16)}` : url.replace(/^https?:\/\//, "");
 
@@ -37,7 +42,7 @@ async function route() {
   current = null;
   nav.querySelectorAll("a").forEach(a => a.toggleAttribute("aria-current", a.dataset.id === id));
   nav.querySelectorAll("a[aria-current]").forEach(a => a.setAttribute("aria-current", "page"));
-  if (!tab) { home(); document.title = "Crowd Lab"; trackTab("home", "Home"); return; }
+  if (!tab) { home(); siteFoot(); document.title = "Crowd Lab"; trackTab("home", "Home"); return; }
   stage.innerHTML = "";
   const module = await tab.load();
   current = { id, module };
@@ -49,6 +54,7 @@ async function route() {
       <h2>Sources</h2>
       <ol>${tab.refs.map(r => `<li>${r.cite}${r.url ? ` <a href="${r.url}" target="_blank" rel="noopener">${refLabel(r.url)}</a>` : ""}</li>`).join("")}</ol>
     </footer>`);
+  siteFoot();
   if (module.story) {
     const b = document.createElement("button");
     b.type = "button"; b.className = "story-btn"; b.textContent = "▶ Walk me through it";

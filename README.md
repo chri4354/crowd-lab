@@ -51,3 +51,7 @@ Shared helpers (sliders, buttons, the little person figure, statistics) are in `
 - Ladha, K. K. (1992). The Condorcet jury theorem, free speech, and correlated votes. *American Journal of Political Science*, 36(3), 617–634. doi:10.2307/2111584
 
 Style inspired by Nicky Case's explorables.
+
+## License
+
+The code is open source under the MIT license (see `LICENSE`); contributions are welcome. The datasets in `data/` are rebuilt from the published sources cited above and remain those authors' work.
