@@ -37,7 +37,7 @@ export const TABS = [
   {
     id: "incentives",
     title: "Group rewards I",
-    subtitle: "Should you reward correct people or groups?",
+    subtitle: "Should you reward correct people or correct groups?",
     load: () => import("./incentives.js"),
     refs: [
       { cite: "Kao, A. B., Miller, N., Torney, C., Hartnett, A., &amp; Couzin, I. D. (2014). Collective learning and optimal consensus decisions in social animal groups. <i>PLoS Computational Biology</i>, 10(8), e1003762. The model this tab is built on.", url: "https://doi.org/10.1371/journal.pcbi.1003762" },
@@ -47,7 +47,7 @@ export const TABS = [
   {
     id: "estimates",
     title: "Group rewards II",
-    subtitle: "The same, with numbers not choices",
+    subtitle: "Should you reward correct people or correct groups?",
     load: () => import("./estimates.js"),
     refs: [
       { cite: "Pescetelli, N. (2026). Collective incentives that promote collective intelligence. Submitted. The continuous model this tab is built on." },
