@@ -117,7 +117,13 @@ svg .grid line { stroke: var(--line); stroke-dasharray: 2 4; }
 .refs li { margin-bottom: .35rem; }
 .refs a { color: var(--accent); overflow-wrap: anywhere; }
 .site-foot { margin: 1.6rem 0 0; font-size: .75rem; color: var(--ink-soft); }
+.site-foot p { margin: .5rem 0 0; }
 .site-foot a { color: var(--ink-soft); }
+/* the credit to PSi, the main site */
+.made-by { display: inline-flex; align-items: center; gap: .4rem; text-decoration: none; }
+.made-by .psi-mark { width: 1.7rem; height: auto; flex: none; }
+.made-by b { font-size: 1rem; font-weight: 800; color: var(--ink); }
+.made-by:hover b, .made-by:focus-visible b { color: var(--accent); }
 .credit { font-size: .8rem; color: var(--ink-soft); margin-top: 1.5rem; }
 
 .sidebar-foot a { color: var(--ink-soft); }
