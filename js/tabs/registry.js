@@ -85,4 +85,15 @@ export const TABS = [
       { cite: "Anderson, L. R., &amp; Holt, C. A. (1997). Information cascades in the laboratory. <i>American Economic Review</i>, 87(5), 847–862. The game, played with students.", url: "https://ideas.repec.org/a/aea/aecrev/v87y1997i5p847-62.html" },
     ],
   },
+  {
+    id: "hiddenprofile",
+    title: "Hidden profiles",
+    subtitle: "What gets said in a meeting",
+    load: () => import("./hiddenprofile.js"),
+    refs: [
+      { cite: "Stasser, G., &amp; Titus, W. (1985). Pooling of unshared information in group decision making: Biased information sampling during discussion. <i>Journal of Personality and Social Psychology</i>, 48(6), 1467–1478.", url: "https://doi.org/10.1037/0022-3514.48.6.1467" },
+      { cite: "Stasser, G., &amp; Titus, W. (1987). Effects of information load and percentage of shared information on the dissemination of unshared information during group discussion. <i>Journal of Personality and Social Psychology</i>, 53(1), 81–93. The sampling rule this tab is built on.", url: "https://doi.org/10.1037/0022-3514.53.1.81" },
+      { cite: "Stasser, G., &amp; Titus, W. (2003). Hidden profiles: A brief history. <i>Psychological Inquiry</i>, 14(3–4), 304–313.", url: "https://doi.org/10.1080/1047840X.2003.9682897" },
+    ],
+  },
 ];

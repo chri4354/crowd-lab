@@ -171,7 +171,7 @@ svg .grid line { stroke: var(--line); stroke-dasharray: 2 4; }
   .layout { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
-  .app { grid-template-columns: 1fr; }
+  .app { grid-template-columns: minmax(0, 1fr); }
   .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; padding: .7rem 1rem; border-right: 0; border-bottom: 2px dashed var(--line); }
   #tab-nav { flex-direction: row; overflow-x: auto; gap: .3rem; }
   #tab-nav a { grid-template-columns: auto auto; white-space: nowrap; padding: .35rem .6rem; }

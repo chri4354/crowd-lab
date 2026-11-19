@@ -10,6 +10,7 @@ Small interactive explorables on the wisdom — and madness — of crowds, for t
 - **Lorenz's influence** — replays Lorenz et al.'s Zurich experiment (groups of 12, five guesses, seeing nothing, the average or every guess) on a log scale, then "what if" simulations. Seeing others shrinks the spread, pushes the truth to the edge of the guesses and raises confidence.
 - **Becker's networks** — replays Becker et al.'s experiment (groups of 40 seeing the average of four random neighbours, of one hub, or of nobody), with the real networks, then "what if" simulations. With neighbours and accurate people revising less, the group's average improves; with a hub, it follows the hub.
 - **Information cascades** — Banerjee's two restaurants on Bikhchandani, Hirshleifer & Welch's model: diners arrive one by one with a friend's tip, seeing who sits where but not the tips. Once one room leads by two, everyone follows the crowd, and the evening ends in the worse restaurant far more often than pooling the tips would. Watch the street, run 1,000 evenings, or take your own turn.
+- **Hidden profiles** — a toy hidden profile on Stasser & Titus's sampling rule: four members, two candidates. Best has more good points, but they are split between members, while Okay's are known to all. Each holder mentions a point with chance p, so shared points come up more often, and in short meetings the group picks Okay. Run one meeting or 1,000, against the case where everyone knows everything.
 
 Live at <https://crowdlab.hellopsi.co.uk>. Everything runs in the browser. No build step, no server.
 
@@ -50,6 +51,9 @@ Shared helpers (sliders, buttons, the little person figure, statistics) are in `
 - Bikhchandani, S., Hirshleifer, D., & Welch, I. (1992). A theory of fads, fashion, custom, and cultural change as informational cascades. *Journal of Political Economy*, 100(5), 992–1026. doi:10.1086/261849 — the model behind the cascades tab.
 - Banerjee, A. V. (1992). A simple model of herd behavior. *Quarterly Journal of Economics*, 107(3), 797–817. doi:10.2307/2118364
 - Anderson, L. R., & Holt, C. A. (1997). Information cascades in the laboratory. *American Economic Review*, 87(5), 847–862. — the game, played with students.
+- Stasser, G., & Titus, W. (1985). Pooling of unshared information in group decision making: Biased information sampling during discussion. *Journal of Personality and Social Psychology*, 48(6), 1467–1478. doi:10.1037/0022-3514.48.6.1467
+- Stasser, G., & Titus, W. (1987). Effects of information load and percentage of shared information on the dissemination of unshared information during group discussion. *Journal of Personality and Social Psychology*, 53(1), 81–93. doi:10.1037/0022-3514.53.1.81 — the sampling rule behind the hidden profiles tab (the toy model itself is ours).
+- Stasser, G., & Titus, W. (2003). Hidden profiles: A brief history. *Psychological Inquiry*, 14(3–4), 304–313. doi:10.1080/1047840X.2003.9682897
 - Condorcet, M. de (1785). *Essai sur l'application de l'analyse à la probabilité des décisions rendues à la pluralité des voix*. <https://archive.org/details/essaisurlapplica00cond>
 - Grofman, B., Owen, G., & Feld, S. L. (1983). Thirteen theorems in search of the truth. *Theory and Decision*, 15(3), 261–278. doi:10.1007/BF00125672
 - Ladha, K. K. (1992). The Condorcet jury theorem, free speech, and correlated votes. *American Journal of Political Science*, 36(3), 617–634. doi:10.2307/2111584
