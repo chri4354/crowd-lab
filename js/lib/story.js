@@ -9,7 +9,8 @@
 //   setup    function run when the step opens (e.g. set the crowd to one person)
 //   waitFor  { event, target, until?, prompt? }: Next stays disabled until the user
 //            fires `event` (e.g. "input", "click") on `target`, and `until()` is true
-//   place    "right" | "left" | "below" | "above" (default: wherever fits)
+//   place    "right" | "left" | "below" | "above", or "top-right" for the corner of the
+//            window (default: wherever fits)
 //
 // The page stays fully usable during a story: the dimming is only visual. The card
 // is placed so it never covers what the reader is asked to use (the waitFor target),
@@ -147,6 +148,7 @@ export function startStory(root, steps, { onEnd } = {}) {
       left: () => clampBox(r.left - gap - cw, r.top + r.height / 2 - ch / 2),
       below: () => clampBox(r.left + r.width / 2 - cw / 2, r.bottom + gap),
       above: () => clampBox(r.left + r.width / 2 - cw / 2, r.top - gap - ch),
+      "top-right": () => clampBox(vw, 0),
     };
     const sides = [...new Set([s.place, "right", "left", "below", "above"].filter(Boolean))].map(k => at[k]());
     const corners = [[vw, vh], [vw, 0], [0, vh], [0, 0]].map(([x, y]) => clampBox(x ? vw : 0, y ? vh : 0));

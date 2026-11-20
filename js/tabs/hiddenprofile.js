@@ -54,7 +54,7 @@ export function mount(el) {
     format: v => v.toFixed(2), hint: "How much of what they know each person says. Short meetings: low p.",
     onInput: v => setP(v) });
   c.appendChild(ctl);
-  const presets = document.createElement("div"); presets.className = "btn-row";
+  const presets = document.createElement("div"); presets.className = "btn-row"; presets.dataset.tour = "presets";
   presets.appendChild(button("Short meeting (p = 0.25)", () => setP(0.25)));
   presets.appendChild(button("Long meeting (p = 0.75)", () => setP(0.75)));
   presets.appendChild(button("Everyone knows everything", () => setCond("shared")));
@@ -135,9 +135,14 @@ function runMeeting() {
     }
     draw();
     if (m.shown < m.order.length) timer = setTimeout(step, STEP_MS);
+    else over();
   };
   timer = setTimeout(step, STEP_MS);
 }
+
+// tell anyone listening (the guided story) that the meeting is over; it comes from the
+// Run a meeting button, so the story can point at the button while it waits
+const over = () => root?.querySelector('[data-tour="meet"]')?.dispatchEvent(new CustomEvent("meeting-over", { bubbles: true }));
 
 function thousand() {
   let best = 0;
@@ -326,3 +331,60 @@ function drawChart() {
 
 // for checking against the deck's numbers (p_best in render_charts.py)
 export const _model = { pBestHidden, pBestShared, discussed, meeting };
+
+// ---------- guided story ----------
+function storyStart(p = 0.25) {
+  stop();
+  if (S.cond !== "hidden") setCond("hidden");
+  setP(p);
+}
+const pc = v => `${Math.round(v * 100)}%`;
+let meetings = 0;
+
+export const story = [
+  { setup: () => storyStart(),
+    text: `<p><b>1985.</b> Garold Stasser and William Titus gave groups of four students profiles of three candidates for student-council president, then asked each group to agree on one.</p>
+           <p>The twist: each student got only part of the information. The best candidate only looked best if the group put together what its members knew. Did it?</p>` },
+  { target: ".stage-card", reveal: [".stage-card"], setup: () => storyStart(),
+    text: `<p>A simpler version: four colleagues, two candidates. <b>Okay</b> has 4 good points, known to everyone (dashed edge). <b>Best</b> has 8, split two to each member.</p>
+           <p>Alone, each of them sees Okay 4, Best 2, and prefers Okay. Together, they know Best wins 8 to 4. Best's case is a <b>hidden profile</b>.</p>` },
+  { target: '[data-tour="meet"]', reveal: [".controls", '[data-tour="meet"]'], place: "top-right",
+    text: `<p>Now they meet. Each member brings up each point they know with some chance; right now, one in four. A short meeting.</p>
+           <p>The group then picks whichever candidate had more good points said out loud. Click <b>Run a meeting</b> and watch the points come up one by one.</p>`,
+    waitFor: { event: "meeting-over", target: '[data-tour="meet"]', prompt: "Click Run a meeting, and wait for the last point." } },
+  { target: [".stage-card", ".readouts"], reveal: [".readouts", ".why"],
+    text: () => { const m = S.meet;
+      const res = m ? `<p>This time ${m.best} of Best's 8 points came up, and ${m.okay} of Okay's 4, so the group ${m.tie ? "was tied, and a coin flip picked" : "picked"} <b>${name(m.pick)}</b>.</p>` : "";
+      return `${res}<p>Nobody hid anything, and nobody was biased. But each of Okay's points has four people who might mention it, so it comes up ${pc(discussed(S.p, 4))} of the time. Each of Best's points has one, so ${pc(discussed(S.p, 1))}.</p>`; } },
+  { target: '[data-tour="meet"]', place: "top-right", setup: () => { meetings = 0; },
+    text: `<p>Run a few more, and watch the readouts: shared points against points only one member held.</p>`,
+    waitFor: { event: "meeting-over", target: '[data-tour="meet"]', until: () => ++meetings >= 3, prompt: "Run three more meetings." } },
+  { target: ".readouts",
+    text: () => { const { shared, unique } = S.seen;
+      return `<p>${unique[1] ? `Over your meetings, ${shared[0]} of ${shared[1]} shared points came up, but only ${unique[0]} of ${unique[1]} points one member held.` : ""} Discussion is a sample of what the group knows, and the sample is tilted towards what everyone knew already.</p>
+              <p>That is Stasser and Titus's explanation: what is shared gets said more, so it counts more.</p>`; } },
+  { target: '[data-tour="thousand"]', reveal: ['[data-tour="thousand"]'], place: "below",
+    text: `<p>Count it. <b>Run 1,000 meetings.</b></p>`,
+    waitFor: { event: "click", target: '[data-tour="thousand"]', prompt: "Click Run 1,000 meetings." } },
+  { target: ".readouts",
+    text: () => `<p>${S.tally ? `The group picked Best in ${fmt(S.tally.best)} meetings out of 1,000.` : ""} Had they laid every point on the table, they would have picked Best every time.</p>
+                 <p>The answer was in the room. The meeting didn't bring it out.</p>` },
+  { target: ".chart-card", reveal: [".chart-card"],
+    text: () => `<p>The exact chances. The green line is our group: in a meeting this short, it picks Best ${pc(pBestHidden(S.p))} of the time, worse than a coin flip.</p>
+                 <p>Stasser and Titus's groups fell into the same trap. Given the full picture, most picked the best candidate; given a hidden profile, few did, and their discussion kept returning to what everyone already knew.</p>` },
+  { target: '[data-tour="p"]', reveal: ['[data-tour="p"]'], place: "below",
+    text: `<p>Would a longer meeting help? <b>Let people say more of what they know.</b></p>`,
+    waitFor: { event: "input", target: '[data-tour="p"] input', until: () => S.p >= 0.75, prompt: "Drag the slider to 0.75 or more." } },
+  { target: ".chart-card",
+    text: () => `<p>Yes: now Best wins ${pc(pBestHidden(S.p))} of the time. But look at the price. Each person had to bring up ${pc(S.p)} of everything they know, and the shared points still come up more often.</p>
+                 <p>Below about 0.47 on the slider, the group is more likely to pick Okay than Best.</p>` },
+  { target: ".mode", reveal: [".mode"], place: "below", setup: () => storyStart(),
+    text: `<p>Back to a short meeting (one in four). This time, give everyone the full picture before they meet.</p>`,
+    waitFor: { event: "click", target: '.mode button[data-value="shared"]', prompt: "Click “Everyone knows everything”." } },
+  { target: ".chart-card",
+    text: () => `<p>Every member now knows all 12 points, so each of Best's points also has four people who might mention it. In the same short meeting, the group picks Best ${pc(pBestShared(S.p))} of the time (the dashed line), against ${pc(pBestHidden(S.p))} before.</p>
+                 <p>Same people, same meeting. All that changed is who knew what when they walked in.</p>` },
+  { reveal: ['[data-tour="presets"]'],
+    text: `<p>That's a hidden profile. A group often meets <i>because</i> its members know different things, yet discussion favours what they have in common: a point counts as often as it is repeated.</p>
+           <p>Compare <a href="#/condorcet">Condorcet's jury</a>, where each independent judgement counts once, or <a href="#/cascades">Information cascades</a>, another way private information gets lost.</p>` },
+];
