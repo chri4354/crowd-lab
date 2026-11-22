@@ -7,8 +7,8 @@ import { slider, button, seg, fmt } from "../lib/util.js";
 //
 // Fish: the stock S grows by r·S·(1 − S/K). A boat with effort e catches q·e·S and makes
 // p·q·e·S − c·e. Profit per unit of effort is p·q·S − c, so it is zero at S = c/(p·q):
-// Gordon's open-access level, where the rent has gone. The most the lake can yield each
-// year comes at S = K/2.
+// Gordon's open-access level, where the rent has gone. The biggest catch the lake can give
+// each year comes at S = K/2; the biggest profit (maximum economic yield) at S = (K + c/(p·q))/2.
 //
 // Boats are of three types. Cooperators fish the agreed effort E_C. Defectors move their
 // effort towards more profit: up while p·q·S > c, down when it is below (capped at E_MAX).
@@ -23,7 +23,7 @@ import { slider, button, seg, fmt } from "../lib/util.js";
 const K = 100, R_GROW = 0.25, Q = 0.01, PRICE = 10, COST = 2;
 const N0 = 25, N_MAX = 50, E_C = 0.4, E_MAX = 1.2, ETA = 0.015;
 const REVISE = 0.1, SCALE = 1.5, ENTRY = 0.5, EXIT = 0.2, START_D = 0.2, ROUNDS = 300;
-const S_OA = COST / (PRICE * Q), S_MSY = K / 2;
+const S_OA = COST / (PRICE * Q), S_MSY = K / 2, S_MEY = (K + S_OA) / 2;
 // presets start from run 2: in about 92% of runs each Ostrom preset ends the way its name says,
 // and run 2 is one of those for both
 const FIRST_SEED = 2;
@@ -166,6 +166,10 @@ function reset() { stop(); S.world = newWorld(params(), S.seed); draw(); }
 function runAgain() { S.seed++; reset(); }
 function step() { stop(); if (!done()) { stepWorld(S.world, params()); draw(); } }
 
+// tell anyone listening (the guided story) that a run has reached its last round; it comes
+// from the Play button, so the story can point at the button while it waits
+const over = () => root?.querySelector('[data-tour="play"]')?.dispatchEvent(new CustomEvent("run-over", { bubbles: true }));
+
 function toggle() { raf ? stop() : start(); }
 function start() {
   if (done()) reset();
@@ -176,7 +180,7 @@ function start() {
     let k = 0;
     while (acc >= 1 && k < 30 && !done()) { stepWorld(S.world, params()); acc -= 1; k++; }
     if (k) draw();
-    if (done()) { stop(); draw(); return; }
+    if (done()) { stop(); draw(); over(); return; }
     raf = requestAnimationFrame(tick);
   };
   raf = requestAnimationFrame(tick);
@@ -217,8 +221,9 @@ function buildControls() {
   row.appendChild(button("Reset", reset)); row.lastChild.dataset.tour = "reset";
   row.appendChild(button("Run again", runAgain)); row.lastChild.dataset.tour = "again";
   c.appendChild(row);
-  c.appendChild(slider({ label: "Speed", min: 2, max: 40, step: 1, value: S.speed, tour: "speed",
-    format: v => `${v} rounds/s`, hint: `A run is ${ROUNDS} rounds.`, onInput: v => { S.speed = v; } }));
+  ctl.speed = slider({ label: "Speed", min: 2, max: 40, step: 1, value: S.speed, tour: "speed",
+    format: v => `${v} rounds/s`, hint: `A run is ${ROUNDS} rounds.`, onInput: v => { S.speed = v; } });
+  c.appendChild(ctl.speed);
 
   ctl.presets = document.createElement("div"); ctl.presets.className = "btn-row"; ctl.presets.dataset.tour = "presets";
   for (const [k, label] of [["hardin", "Hardin: open access"], ["holds", "Norm holds"], ["collapses", "Norm collapses"]]) {
@@ -364,11 +369,17 @@ function axes(svg, y, yLabel, yFormat) {
   return x;
 }
 
-function refLine(svg, x, y, v, label, colour) {
+function refLine(svg, y, v, colour) {
   svg.append("line").attr("x1", CM.l).attr("x2", CW - CM.r).attr("y1", y(v)).attr("y2", y(v))
     .attr("stroke", colour).attr("stroke-width", 2).attr("stroke-dasharray", "7 6");
-  svg.append("text").attr("class", "hand").attr("x", CW - CM.r - 4).attr("y", y(v) - 6).attr("text-anchor", "end").attr("font-size", 22)
-    .style("fill", colour).text(label);
+}
+// a label just above its line, or just below it when another line sits close above;
+// a halo in the card's colour keeps it legible where the data line crosses it
+function refLabel(svg, y, v, label, colour, below = false) {
+  svg.append("text").attr("class", "hand").attr("x", CW - CM.r - 4).attr("y", below ? y(v) + 21 : y(v) - 6)
+    .attr("text-anchor", "end").attr("font-size", 22).style("fill", colour)
+    .attr("stroke", "var(--card)").attr("stroke-width", 5).attr("stroke-linejoin", "round").style("paint-order", "stroke")
+    .text(label);
 }
 
 function drawStock() {
@@ -376,10 +387,24 @@ function drawStock() {
   svg.selectAll("*").remove();
   const y = d3.scaleLinear([0, K], [CH - CM.b, CM.t]);
   const x = axes(svg, y, "", ",d");
-  refLine(svg, x, y, S_MSY, "most fish per year, every year: K/2", "var(--truth)");
-  refLine(svg, x, y, S_OA, "open access: c/(p·q)", "var(--wrong)");
+  // from the top: most profit (MEY), biggest catch (MSY), open access. MEY and MSY are close,
+  // so the MSY label goes under its line, and the open-access label too, to keep clear of it
+  const lines = [
+    [S_MEY, "most profit: (K + c/pq)/2", "var(--series-1)", false],
+    [S_MSY, "biggest catch: K/2", "var(--truth)", true],
+    [S_OA, "open access: c/(p·q)", "var(--wrong)", true],
+  ];
+  for (const [v, , colour] of lines) refLine(svg, y, v, colour);
   svg.append("path").datum(S.world.hist).attr("fill", "none").attr("stroke", "var(--accent)").attr("stroke-width", 4)
     .attr("stroke-linejoin", "round").attr("d", d3.line(d => x(d.t), d => y(d.S)));
+  for (const [v, label, colour, below] of lines) refLabel(svg, y, v, label, colour, below);
+}
+
+// the most the whole lake can earn, year after year (maximum economic yield): total effort
+// E* = r(pqK − c)/(2pq²K), at a stock of K(1 − qE*/r) = S_MEY. With these numbers E* = N0·E_C.
+function bestProfit() {
+  const eStar = (R_GROW * (PRICE * Q * K - COST)) / (2 * PRICE * Q * Q * K);
+  return PRICE * Q * eStar * K * (1 - (Q * eStar) / R_GROW) - COST * eStar;
 }
 
 function drawProfit() {
@@ -389,11 +414,9 @@ function drawProfit() {
   const lo = Math.min(0, d3.min(hist, d => d.profit) ?? 0), hi = Math.max(50, d3.max(hist, d => d.profit) ?? 0);
   const y = d3.scaleLinear([lo, hi], [CH - CM.b, CM.t]).nice();
   const x = axes(svg, y, "", ",d");
-  // the most the whole lake can earn, year after year (maximum economic yield): total effort
-  // E* = r(pqK − c)/(2pq²K), at a stock of K(1 − qE*/r). With these numbers E* = N0·E_C.
-  const eStar = (R_GROW * (PRICE * Q * K - COST)) / (2 * PRICE * Q * Q * K);
-  const best = PRICE * Q * eStar * K * (1 - (Q * eStar) / R_GROW) - COST * eStar;
-  refLine(svg, x, y, best, "the most the lake can earn, every year", "var(--truth)");
+  const best = bestProfit();
+  refLine(svg, y, best, "var(--series-1)");
+  refLabel(svg, y, best, `most profit: ${fmt(best)} per round`, "var(--series-1)");
   svg.append("line").attr("x1", CM.l).attr("x2", CW - CM.r).attr("y1", y(0)).attr("y2", y(0)).attr("stroke", "var(--ink-soft)").attr("stroke-width", 1.5);
   svg.append("path").datum(hist).attr("fill", "none").attr("stroke", "var(--crowd)").attr("stroke-width", 4)
     .attr("stroke-linejoin", "round").attr("d", d3.line(d => x(d.t), d => y(d.profit)));
@@ -411,6 +434,76 @@ function drawShares() {
   svg.append("g").selectAll("path").data(stack).join("path").attr("fill", s => COL[s.key]).attr("opacity", 0.85)
     .attr("d", d3.area().x(d => x(d.data.t)).y0(d => y(d[0])).y1(d => y(d[1])));
 }
+
+// ---------- guided story ----------
+// The story runs each preset from run 2 (FIRST_SEED), where each ends the way its name says.
+const STORY_SPEED = 20;
+function storyPreset(name) {
+  applyPreset(name);
+  S.speed = STORY_SPEED; ctl.speed.set(STORY_SPEED);
+}
+// make sure the finished run of a preset (seed 2, preset settings, plus `patch`) is on screen;
+// if the reader went Back, skipped ahead or moved a slider, run it again at once
+function storyFinish(name, patch = {}) {
+  const want = { ...PRESETS[name], ...patch };
+  const same = S.preset === name && S.seed === FIRST_SEED && done()
+    && ["mode", "e0", "m", "F", "gamma", "bounded"].every(k => S[k] === want[k]);
+  if (same) return;
+  storyPreset(name);
+  if (patch.bounded !== undefined) setBounded(patch.bounded, false);
+  while (!done()) stepWorld(S.world, params());
+  draw();
+}
+// the last 50 rounds of the run on screen, and how a preset starts
+const storyTail = () => { const t = S.world.hist.slice(-50); return { S: d3.mean(t, d => d.S), profit: d3.mean(t, d => d.profit) }; };
+const startOf = name => {
+  const P = PRESETS[name], w = newWorld(P, FIRST_SEED), d = defectionSums(w, P), h = w.hist[0];
+  return { ...h, fine: fmt(d.fine, 1), gain: fmt(d.extra, 1) };
+};
+const lastRound = () => S.world.hist[S.world.hist.length - 1];
+const PLAY = '[data-tour="play"]';
+const waitRun = (until, prompt) => ({ event: "run-over", target: PLAY, until, prompt });
+
+export const story = [
+  { target: [".stage-card", PLAY], reveal: [".stage-card", ".controls", ".readouts", ".stock-card"], setup: () => storyPreset("hardin"),
+    text: `<p><b>A shared lake.</b> ${N0} boats fish the same lake. The fish regrow every year, fastest when the lake is half full. Each boat chooses how hard to fish: more effort catches more fish, and costs more.</p>
+           <p>Start with open access. Every boat fishes for its own profit, and new boats can join. Click <b>Play</b>.</p>`,
+    waitFor: waitRun(() => S.mode === "hardin", "Click Play, and wait for round 300.") },
+  { target: [".stock-card", ".profit-card"], reveal: [".profit-card"], setup: () => storyFinish("hardin"),
+    text: () => { const t = storyTail();
+      return `<p>The stock fell to about ${Math.round(t.S)} and stayed on the red line, the open-access level. There a boat's catch only just covers its costs, so all the boats together earn almost nothing: ${fmt(t.profit, 1)} per round.</p>
+              <p>This is Hardin's tragedy of the commons (1968). Gordon (1954) had shown it formally for fisheries: boats fish harder, and new boats come, as long as fishing pays.</p>`; } },
+  { target: ".stock-card",
+    text: () => `<p>The three dashed lines. <b>Biggest catch</b>, at K/2 = ${S_MSY}: the lake regrows fastest when half full, so this is where it gives the most fish each year. <b>Most profit</b>, at ${S_MEY}: the catch is a little smaller, but it takes less effort, so profit is highest (${fmt(bestProfit())} per round). <b>Open access</b>, at ${S_OA}: profit is zero.</p>
+                 <p>Open access ends far below both.</p>` },
+  { target: [".mode", PLAY], reveal: [".mode", ".shares-card"],
+    text: `<p>Ostrom (1990) studied communities that run their own commons with rules. Here there are three types of boat. <b>Cooperators</b> fish a moderate, agreed amount. <b>Defectors</b> fish as hard as pays. <b>Enforcers</b> fish like cooperators, and pay a cost to fine each defector they spot.</p>
+           <p>Each round, a few boats compare their profit with another boat's, and may copy its type if it earned more. Click <b>Ostrom: rules</b>, then <b>Play</b>.</p>`,
+    waitFor: waitRun(() => S.mode === "ostrom" && S.preset === "holds", "Click Ostrom: rules, then Play, and wait for round 300.") },
+  { target: [".stock-card", ".shares-card"], setup: () => storyFinish("holds"),
+    text: () => { const s = startOf("holds"), gone = S.world.hist.find(d => d.D === 0);
+      return `<p>This was the <b>Norm holds</b> preset: ${s.E} enforcers, ${s.D} defectors and ${s.C} cooperators at the start. A defector could expect a fine of ${s.fine} a round, more than the ${s.gain} it gained by fishing hard. So defectors earned less, and switched.</p>
+              <p>${gone ? `By round ${gone.t} none were left. ` : ""}The stock settled at about ${Math.round(storyTail().S)}, on the most-profit line. With no defectors left, enforcers fine nobody, so enforcing costs them nothing.</p>`; } },
+  { target: ['[data-tour="presets"]', PLAY],
+    text: () => `<p>Same rules: the same fine and the same monitoring. The <b>Norm collapses</b> preset changes one thing: ${startOf("collapses").E} enforcers at the start instead of ${startOf("holds").E}.</p>
+                 <p>Click <b>Norm collapses</b>, then <b>Play</b>.</p>`,
+    waitFor: waitRun(() => S.preset === "collapses", "Click Norm collapses, then Play, and wait for round 300.") },
+  { target: [".stock-card", ".shares-card"], setup: () => storyFinish("collapses"),
+    text: () => { const s = startOf("collapses"), h = lastRound();
+      return `<p>With fewer enforcers, fines were too rare. A defector could expect a fine of ${s.fine}, less than the ${s.gain} it gained, so defecting paid. Other boats copied the defectors. Enforcers paid for every fine they gave, earned the least, and were copied least.</p>
+              <p>By round ${ROUNDS}, ${h.D} of ${h.n} boats were defecting and ${h.E ? `${h.E} enforcers were` : "no enforcers were"} left. The stock fell to about ${Math.round(storyTail().S)}, the open-access level.</p>`; } },
+  { target: ['[data-tour="bounds"]', PLAY], setup: () => storyPreset("holds"),
+    text: `<p>Back to <b>Norm holds</b>, with ${Math.round(PRESETS.holds.e0 * N0)} enforcers. This time, outsiders can come in: with clear boundaries off, a new boat joins while fishing pays, and it fishes hard.</p>
+           <p>Turn <b>Clear boundaries</b> off, then click <b>Play</b>.</p>`,
+    waitFor: waitRun(() => S.preset === "holds" && !S.bounded, "Turn Clear boundaries off, then Play, and wait for round 300.") },
+  { target: [".stock-card", ".shares-card"], setup: () => storyFinish("holds", { bounded: false }),
+    text: () => { const h = lastRound();
+      return `<p>New boats kept joining while fishing paid, all as defectors, and left again when they lost money. With more boats fishing the same lake, the stock fell to about ${Math.round(storyTail().S)}, near open access. At round ${ROUNDS}, ${h.n} boats were on the lake and ${h.D} of them were defecting.</p>
+              <p>The rules were the same as before. What changed is who could fish. This is the point about boundaries in Dietz, Ostrom and Stern (2003), the core reading: rules hold better when outsiders can be kept out at low cost.</p>`; } },
+  { target: '[data-tour="rules"]', reveal: [".about-card"], setup: () => storyPreset("holds"),
+    text: `<p><b>Your turn.</b> Change monitoring, the fine, or the enforcer's cost, and click Play. The readouts compare what a defector gains with the fine it can expect. Find where the norm tips.</p>
+           <p>The model covers three of Ostrom's eight design principles: boundaries, monitoring and sanctions. It leaves out the others, such as users making and changing their rules by talking to each other. It is a simplified model, not data.</p>` },
+];
 
 // for checking the model outside the page
 export const _model = { newWorld, stepWorld, defectionSums, PRESETS, S_OA, S_MSY, K, ROUNDS };
