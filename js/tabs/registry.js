@@ -96,4 +96,18 @@ export const TABS = [
       { cite: "Stasser, G., &amp; Titus, W. (2003). Hidden profiles: A brief history. <i>Psychological Inquiry</i>, 14(3–4), 304–313.", url: "https://doi.org/10.1080/1047840X.2003.9682897" },
     ],
   },
+  {
+    id: "commons",
+    title: "The commons",
+    subtitle: "Hardin's tragedy, Ostrom's rules",
+    load: () => import("./commons.js"),
+    refs: [
+      { cite: "Hardin, G. (1968). The tragedy of the commons. <i>Science</i>, 162(3859), 1243–1248.", url: "https://doi.org/10.1126/science.162.3859.1243" },
+      { cite: "Gordon, H. S. (1954). The economic theory of a common-property resource: The fishery. <i>Journal of Political Economy</i>, 62(2), 124–142. Open access, and the stock where the profit is gone.", url: "https://doi.org/10.1086/257497" },
+      { cite: "Schaefer, M. B. (1954). Some aspects of the dynamics of populations important to the management of the commercial marine fisheries. <i>Bulletin of the Inter-American Tropical Tuna Commission</i>, 1(2), 27–56. Reprinted in <i>Bulletin of Mathematical Biology</i>, 53(1–2), 253–279 (1991); the link is to the reprint.", url: "https://doi.org/10.1007/BF02464432" },
+      { cite: "Sethi, R., &amp; Somanathan, E. (1996). The evolution of social norms in common property resource use. <i>American Economic Review</i>, 86(4), 766–788. The model this tab simplifies: the boats here are a simplified model in the spirit of this paper, not its equations.", url: "https://ideas.repec.org/a/aea/aecrev/v86y1996i4p766-88.html" },
+      { cite: "Ostrom, E. (1990). <i>Governing the Commons: The Evolution of Institutions for Collective Action</i>. Cambridge University Press. The design principles.", url: "https://doi.org/10.1017/CBO9780511807763" },
+      { cite: "Ostrom, E., Gardner, R., &amp; Walker, J. (1994). <i>Rules, Games, and Common-Pool Resources</i>. University of Michigan Press.", url: "https://doi.org/10.3998/mpub.9739" },
+    ],
+  },
 ];
