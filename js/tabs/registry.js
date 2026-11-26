@@ -110,4 +110,16 @@ export const TABS = [
       { cite: "Ostrom, E., Gardner, R., &amp; Walker, J. (1994). <i>Rules, Games, and Common-Pool Resources</i>. University of Michigan Press.", url: "https://doi.org/10.3998/mpub.9739" },
     ],
   },
+  {
+    id: "twoheads",
+    title: "Two heads",
+    subtitle: "When confidence counts",
+    load: () => import("./twoheads.js"),
+    refs: [
+      { cite: "Bahrami, B., Olsen, K., Latham, P. E., Roepstorff, A., Rees, G., &amp; Frith, C. D. (2010). Optimally interacting minds. <i>Science</i>, 329(5995), 1081–1085. The four models, and the real pairs' fitted line.", url: "https://doi.org/10.1126/science.1185718" },
+      { cite: "Ernst, M. O., &amp; Banks, M. S. (2002). Humans integrate visual and haptic information in a statistically optimal fashion. <i>Nature</i>, 415(6870), 429–433. Bayes inside one head.", url: "https://doi.org/10.1038/415429a" },
+      { cite: "Mahmoodi, A., Bang, D., Olsen, K., Zhao, Y. A., Shi, Z., Broberg, K., … Bahrami, B. (2015). Equality bias impairs collective decision-making across cultures. <i>PNAS</i>, 112(12), 3835–3840.", url: "https://doi.org/10.1073/pnas.1421692112" },
+      { cite: "Pescetelli, N., &amp; Yeung, N. (2021). The role of decision confidence in advice-taking and trust formation. <i>Journal of Experimental Psychology: General</i>, 150(3), 507–526. The dots task, and learning whom to trust without feedback.", url: "https://doi.org/10.1037/xge0000960" },
+    ],
+  },
 ];

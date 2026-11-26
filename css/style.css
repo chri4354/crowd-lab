@@ -178,3 +178,12 @@ svg .grid line { stroke: var(--line); stroke-dasharray: 2 4; }
   #tab-nav a .s, .sidebar-foot { display: none; }
   .brand { font-size: 1.5rem; }
 }
+
+/* Two heads: the six answer buttons */
+.answers { margin-top: .8rem; }
+.answers-top { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem 1rem; margin-bottom: .5rem; }
+.answers-q { margin: 0; font-weight: 800; }
+.answers-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .4rem; }
+.answers-grid button { padding: .45rem .3rem; font-size: .85rem; border-radius: 12px; }
+.answers-grid button[disabled] { opacity: .4; cursor: default; transform: none; }
+@media (max-width: 760px) { .answers-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
