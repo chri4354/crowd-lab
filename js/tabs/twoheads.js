@@ -14,7 +14,7 @@ import { slider, button, seg, normal, fmt } from "../lib/util.js";
 // Pair sensitivity: ≈ (s1+s2)/2, max(s1,s2), (s1+s2)/√2 and √(s1²+s2²) respectively.
 // Confidence sharing beats the better member only if s_min/s_max > √2 − 1 ≈ 0.41.
 const W = 900, H = 390, HS = 450;
-const BOX = [{ x: 50, side: -1 }, { x: 490, side: 1 }], BW = 360, BH = 236, BY = 16, DOT_R = 4.2;
+const BOX = [{ x: 24, side: -1 }, { x: 476, side: 1 }], BW = 400, BH = 250, BY = 12, DOT_R = 6;
 const CW = 900, CH = 310, CM = { l: 62, r: 24, t: 32, b: 50 };
 const LEVELS = [2, 4, 6, 8, 12];           // how many more dots the fuller box has
 const FLASH_MS = 700;
@@ -459,6 +459,13 @@ function drawChart() {
 
 // ---------- guided story ----------
 let played = 0;
+// while playing, light up the boxes and the answer buttons, not just the Start button
+const PLAYING = [".stage-card", ".answers"];
+// and bring them into view: on a phone, boxes at the top so the story sheet sits below the buttons
+const toBoxes = () => {
+  if (innerWidth < 760) root?.querySelector(".stage-card")?.scrollIntoView({ block: "start" });
+  else scrollTo(0, 0);
+};
 const storyPlay = (partner = 1) => {
   if (S.mode !== "play") setMode("play");
   setPartner(partner);
@@ -479,7 +486,7 @@ export const story = [
   { target: ".stage-card", reveal: [".stage-card"],
     text: `<p>Here is a version you can play, with dots instead of faint patches. Two boxes flash for a moment. Which had more dots?</p>
            <p>You won't be sure, and that's the point. You'll say how sure you are, too.</p>` },
-  { target: '[data-tour="next"]', reveal: [".controls", '[data-tour="next"]', '[data-tour="answer"]'], place: "top-right",
+  { target: PLAYING, reveal: [".controls", '[data-tour="next"]', '[data-tour="answer"]'], place: "top-right", setup: toBoxes,
     text: `<p>Press <b>Start</b>, watch both boxes, then answer: left or right, and whether you are sure, think so, or are guessing.</p>
            <p>A partner sees the same boxes and answers too.</p>`,
     waitFor: { event: "round-over", target: '[data-tour="next"]', prompt: "Play one round." } },
@@ -488,7 +495,7 @@ export const story = [
       const what = !c?.you ? "" : c.pair.how === "agree" ? `<p>This time you agreed, so that was easy.</p>`
         : `<p>This time you disagreed: one vote each.</p>`;
       return `${what}<p>When two people disagree, counting votes gives a tie, and a tie is a coin flip. Bahrami's pairs did something better: they said how sure they were. Here, the pair goes with the surer one.</p>`; } },
-  { target: '[data-tour="next"]', reveal: [".readouts"], place: "top-right", setup: () => { played = 0; },
+  { target: PLAYING, reveal: [".readouts"], place: "top-right", setup: () => { played = 0; toBoxes(); },
     text: `<p>Play some more, and watch the scores add up below.</p>`,
     waitFor: { event: "round-over", target: '[data-tour="next"]', until: () => ++played >= 12, prompt: () => `Play 12 more rounds (${Math.min(played, 12)} so far).` } },
   { target: ".readouts",
@@ -501,7 +508,7 @@ export const story = [
   { target: '[data-tour="partner"]', reveal: ['[data-tour="partner"]'], place: "below",
     text: `<p>Now change partners: one whose glimpse is four times as noisy as yours.</p>`,
     waitFor: { event: "click", target: '[data-tour="partner"] button[data-value="0.25"]', prompt: "Click “Much worse”." } },
-  { target: '[data-tour="next"]', place: "top-right", setup: () => { played = 0; scrollTo(0, 0); },
+  { target: PLAYING, place: "top-right", setup: () => { played = 0; toBoxes(); },
     text: `<p>Play a dozen rounds with your new partner.</p>`,
     waitFor: { event: "round-over", target: '[data-tour="next"]', until: () => ++played >= 12, prompt: () => `Play 12 rounds (${Math.min(played, 12)} so far).` } },
   { target: [".readouts", ".chart-card"],
