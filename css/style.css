@@ -187,3 +187,40 @@ svg .grid line { stroke: var(--line); stroke-dasharray: 2 4; }
 .answers-grid button { padding: .45rem .3rem; font-size: .85rem; border-radius: 12px; }
 .answers-grid button[disabled] { opacity: .4; cursor: default; transform: none; }
 @media (max-width: 760px) { .answers-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* the landing page: ways in (DRAFT) */
+.entry { flex-wrap: wrap; border-radius: 18px; }
+.entry-body { margin-top: 1.4rem; scroll-margin-top: 1rem; }
+.ask { font-family: var(--hand); font-weight: 400; font-size: 1.9rem; margin: 0 0 .8rem; }
+.answers-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: .8rem; }
+.answers-list .pick { display: flex; flex-direction: column; align-items: flex-start; gap: .25rem; text-align: left;
+  border-radius: 16px; padding: .9rem 1.1rem; box-shadow: var(--shadow); font-weight: 400; min-height: 5.2rem; position: relative; }
+.answers-list .pick:hover { border-color: var(--accent); }
+.answers-list .pick .say { font-family: var(--hand); font-size: 1.45rem; line-height: 1.15; color: var(--ink); }
+.answers-list.first .pick .say::before { content: "“"; color: var(--accent); }
+.answers-list.first .pick .say::after { content: "”"; color: var(--accent); }
+.answers-list .pick .hint { font-size: .85rem; color: var(--ink-soft); }
+.answers-list .pick.soon { border-style: dashed; box-shadow: none; background: transparent; }
+.answers-list .pick .tag, .result .kicker { font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+.answers-list .pick .tag { position: absolute; top: .5rem; right: .8rem; }
+.trail { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .5rem; margin-bottom: 1rem; font-size: .9rem; color: var(--ink-soft); }
+.trail .crumb { padding: .2rem .7rem; font-size: .85rem; box-shadow: none; border-width: 1.5px; background: var(--paper-2); }
+.trail .crumb.restart { background: transparent; border-style: dashed; margin-left: .4rem; }
+.result { max-width: 46rem; padding: 1.3rem 1.5rem; border-width: 2.5px; }
+.result .kicker { margin: 0 0 .2rem; }
+.result h2 { font-size: 2.2rem; margin: 0; }
+.result .sub { margin: 0 0 .8rem; color: var(--ink-soft); }
+.result .take { font-size: 1.12rem; margin: 0 0 1.1rem; max-width: 60ch; }
+.result .play { display: inline-block; font-weight: 800; text-decoration: none; color: #2b2a33; background: var(--crowd);
+  border: 2px solid var(--ink); border-radius: 999px; padding: .5rem 1.2rem; box-shadow: 0 2px 0 var(--ink); }
+.result .play:hover { transform: translateY(-1px); }
+.result.soon { border-style: dashed; box-shadow: none; }
+.result .hint { color: var(--ink-soft); font-size: .9rem; margin: 0; }
+.result .hint a, .also a { color: var(--accent); font-weight: 700; }
+.also { max-width: 46rem; margin: 1rem 0 0; }
+@media (max-width: 760px) {
+  .entry { display: grid; grid-template-columns: 1fr; width: 100%; }
+  .entry button + button { border-left: 0; border-top: 2px solid var(--ink); }
+  .answers-list .pick { min-height: 0; }
+  .result h2 { font-size: 1.8rem; }
+}
